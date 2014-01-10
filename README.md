@@ -1,5 +1,7 @@
 # literal
 
+[![Build Status](https://travis-ci.org/mpeterv/literal.png?branch=master)](https://travis-ci.org/mpeterv/literal)
+
 Not everything stated here is implemented. 
 
 ## Introduction

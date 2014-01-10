@@ -147,7 +147,7 @@ function literal.Cursor:skip_space_and_comments()
 
          if self:match '%[=*%[' then
             -- Long comment
-            self:load_long_string()
+            self:eval_long_string()
          else
             -- Short comment
             self:jump(self:match '[^\r\n]*()')
@@ -164,7 +164,7 @@ function literal.Cursor:finish()
    return self
 end
 
-function literal.Cursor:load_long_string()
+function literal.Cursor:eval_long_string()
    local second_opening_bracket = self:assert(self:match '%[=*()%[', "expected long string")
 
    local level = second_opening_bracket-self.i-1
@@ -199,7 +199,7 @@ local escapes = {
    ['\"'] = '"'
 }
 
-function literal.Cursor:load_short_string()
+function literal.Cursor:eval_short_string()
    self:assert(self:match '[\'"]', "expected short string")
 
    local quote = self.char
@@ -275,7 +275,7 @@ function literal.Cursor:load_short_string()
    return buf:res()
 end
 
-function literal.Cursor:load_sign()
+function literal.Cursor:eval_sign()
    if self.char == '-' then
       self:step()
       return -1
@@ -286,9 +286,9 @@ function literal.Cursor:load_sign()
    return 1
 end
 
-function literal.Cursor:load_number()
+function literal.Cursor:eval_number()
    self:assert(self:match '[%+%-%.%x]', "expected numerical constant")
-   local mul = self:load_sign()
+   local mul = self:eval_sign()
    local res
 
    if self:match '0[xX]' then
@@ -344,7 +344,7 @@ function literal.Cursor:load_number()
          if self:match '[pP]' then
             self:step()
 
-            local pow_mul = self:load_sign()
+            local pow_mul = self:eval_sign()
             local pow_str, next_i = self:match '(%d+)()'
 
             if not pow_str then
@@ -397,7 +397,7 @@ local keywords = {
    ["while"] = true
 }
 
-function literal.Cursor:load_table()
+function literal.Cursor:eval_table()
    self:assert(self.char == '{', "expected table literal")
    local t = {}
    local n = 0
@@ -418,7 +418,7 @@ function literal.Cursor:load_table()
             key_value = true
             self:step()
             self:skip_space_and_comments()
-            k = self:load()
+            k = self:eval()
             self:skip_space_and_comments()
             self:assert(self.char == ']', "expected ']'")
             self:step()
@@ -439,11 +439,11 @@ function literal.Cursor:load_table()
          self:assert(self.char == '=', "expected '='")
          self:step()
          self:skip_space_and_comments()
-         v = self:load()
+         v = self:eval()
          self:assert(k ~= nil, "table index is nil")
          t[k] = v
       else
-         v = self:load()
+         v = self:eval()
          n = n+1
          t[n] = v
       end
@@ -463,7 +463,7 @@ local literals = {
    ["false"] = {false}
 }
 
-function literal.Cursor:load()
+function literal.Cursor:eval()
    for lit, val in pairs(literals) do
       if self:match(lit) then
          self:step(lit:len())
@@ -472,51 +472,51 @@ function literal.Cursor:load()
    end
 
    if self:match '[\'"]' then
-      return self:load_short_string()
+      return self:eval_short_string()
    elseif self:match '%[=*%[' then
-      return self:load_long_string()
+      return self:eval_long_string()
    elseif self:match '[%+%-%d]' then
-      return self:load_number()
+      return self:eval_number()
    elseif self.char == '{' then
-      return self:load_table()
+      return self:eval_table()
    else
       self:error("expected literal")
    end
 end
 
-function literal.load(str, grammar, filename)
+function literal.eval(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
-   local res = cur:load()
+   local res = cur:eval()
    cur:finish()
    return res
 end
 
-function literal.load_short_string(str, grammar, filename)
+function literal.eval_short_string(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
-   local res = cur:load_short_string()
+   local res = cur:eval_short_string()
    cur:finish()
    return res
 end
 
-function literal.load_long_string(str, grammar, filename)
+function literal.eval_long_string(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
-   local res = cur:load_long_string()
+   local res = cur:eval_long_string()
    cur:finish()
    return res
 end
 
-function literal.load_string(str, grammar, filename)
+function literal.eval_string(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
    local res
 
    if cur:match '[\'"]' then
-      res = cur:load_short_string()
+      res = cur:eval_short_string()
    elseif cur:match '%[=*%[' then
-      res = cur:load_long_string()
+      res = cur:eval_long_string()
    else 
       self:error("expected string literal")
    end
@@ -525,18 +525,18 @@ function literal.load_string(str, grammar, filename)
    return res
 end
 
-function literal.load_number(str, grammar, filename)
+function literal.eval_number(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
-   local res = cur:load_number()
+   local res = cur:eval_number()
    cur:finish()
    return res
 end
 
-function literal.load_table(str, grammar, filename)
+function literal.eval_table(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
-   local res = cur:load_table()
+   local res = cur:eval_table()
    cur:finish()
    return res
 end

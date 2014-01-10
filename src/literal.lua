@@ -45,7 +45,7 @@ function literal.Cursor:__init(str, grammar, filename)
    if filename then
       self.repr = filename
    else
-      self.repr = self:match("([ %p%d%a]+)") or ""
+      self.repr = self:match('([ %p%d%a]*)')
 
       if self.repr:len() > self.max_repr_length or self.repr:len() ~= str:len() then
          self.repr = self.repr:sub(1, self.max_repr_length) .. "..."
@@ -62,7 +62,7 @@ function literal.Cursor:__init(str, grammar, filename)
    end
 end
 
-function literal.Cursor:error(msg, chunk)
+function literal.Cursor:errormsg(msg, chunk)
    local line = self.line
 
    if not chunk then
@@ -78,7 +78,11 @@ function literal.Cursor:error(msg, chunk)
       end
    end
 
-   error(("%s:%d: %s near %s"):format(self.repr, line, msg, chunk))
+   return ("%s:%d: %s near %s"):format(self.repr, line, msg, chunk)
+end
+
+function literal.Cursor:error(msg, chunk)
+   error(self:errormsg(msg, chunk))
 end
 
 function literal.Cursor:assert(assertion, msg, chunk)
@@ -138,14 +142,7 @@ function literal.Cursor:match(pattern)
 end
 
 function literal.Cursor:skip_newline()
-   local old_char = self.char
-   self:step()
-
-   if self.char:match '[\r\n]' and self.char ~= old_char then
-      self:step()
-   end
-
-   return self
+   self:step(self.bound and 2)
 end
 
 function literal.Cursor:skip_space()
@@ -217,20 +214,25 @@ local escapes = {
 function literal.Cursor:eval_short_string()
    self:assert(self:match '[\'"]', "short string expected")
    local quote = self.char
+   local errmsg = self:errormsg("unfinished string")
    local buf = buffer()
    self:step()
    local chunk_start = self.i
 
    while self.char ~= quote do
-      self:assert(self:match '[^\r\n]', "unfinished string")
+      if not self:match '[^\r\n]' then
+         error(errmsg)
+      end
 
       if self.char == '\\' then
+         -- Escape sequence
          -- Cut chunk
          buf:add(self.str:sub(chunk_start, self.i-1))
-
-         -- Escape sequence
          self:step()
-         self:assert(self.char ~= '', "unfinished string")
+
+         if self.char == '' then
+            error(errmsg)
+         end
 
          if escapes[self.char] then
             -- Regular escape

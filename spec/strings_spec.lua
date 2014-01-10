@@ -43,7 +43,7 @@ describe("short strings", function()
       assert.errors(function() literal.eval_short_string[['foo\jbar']] end,
          [=[[string "'foo\jbar'"]:1: invalid escape sequence near '\j']=])
       assert.errors(function() literal.eval_short_string[['foo\]] end,
-         [=[[string "'foo\"]:1: unfinished string near <eof>]=])
+         [=[[string "'foo\"]:1: unfinished string near ''foo\']=])
       assert.errors(function() literal.eval_short_string([['foo\]] .. '\a' .. [[']]) end,
          [=[[string "'foo\..."]:1: invalid escape sequence near '\']=])
    end)
@@ -54,9 +54,9 @@ describe("short strings", function()
       assert.equal('foo\nbar', literal.eval_short_string([['foo\]] .. '\r\n' .. [[bar']]))
       assert.equal('foo\nbar', literal.eval_short_string([['foo\]] .. '\n\r' .. [[bar']]))
       assert.errors(function() literal.eval_short_string([['foo\]] .. '\n\n' .. [[bar']]) end,
-         "[string \"'foo\\...\"]:2: unfinished string near 'bar''")
+         [=[[string "'foo\..."]:1: unfinished string near ''foo\']=])
       assert.errors(function() literal.eval_short_string([['foo\]] .. '\r\r' .. [[bar']]) end,
-         "[string \"'foo\\...\"]:2: unfinished string near 'bar''")
+         [=[[string "'foo\..."]:1: unfinished string near ''foo\']=])
    end)
 
    it("evaluates strings with decimal escape sequences", function()

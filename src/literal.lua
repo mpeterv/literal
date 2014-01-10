@@ -1,4 +1,4 @@
---- A library for safely evaluating Lua literal expressions. 
+--- A library for safe evaluation of Lua literal expressions. 
 -- @module literal
 -- @author Peter Melnichenko
 -- @license Public Domain
@@ -502,7 +502,7 @@ end
 -- @string str the string. 
 -- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
 -- @string[opt] filename the filename to be used in error messages. 
--- @raise Errors similar to those of Lua compilers. 
+-- @raise Errors similar to those of Lua compiler. 
 -- @return[type=nil|boolean|number|string|table] Result of evaluation. 
 function literal.eval(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
@@ -516,7 +516,7 @@ end
 -- @string str the string. 
 -- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
 -- @string[opt] filename the filename to be used in error messages. 
--- @raise Errors similar to those of Lua compilers. 
+-- @raise Errors similar to those of Lua compiler. 
 -- @return[type=string] Result of evaluation. 
 -- @see eval
 function literal.eval_short_string(str, grammar, filename)
@@ -531,7 +531,7 @@ end
 -- @string str the string. 
 -- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
 -- @string[opt] filename the filename to be used in error messages. 
--- @raise Errors similar to those of Lua compilers. 
+-- @raise Errors similar to those of Lua compiler. 
 -- @return[type=string] Result of evaluation. 
 -- @see eval
 function literal.eval_long_string(str, grammar, filename)
@@ -546,7 +546,7 @@ end
 -- @string str the string. 
 -- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
 -- @string[opt] filename the filename to be used in error messages. 
--- @raise Errors similar to those of Lua compilers. 
+-- @raise Errors similar to those of Lua compiler. 
 -- @return[type=string] Result of evaluation. 
 -- @see eval
 function literal.eval_string(str, grammar, filename)
@@ -570,7 +570,7 @@ end
 -- @string str the string. 
 -- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
 -- @string[opt] filename the filename to be used in error messages. 
--- @raise Errors similar to those of Lua compilers. 
+-- @raise Errors similar to those of Lua compiler. 
 -- @return[type=number] Result of evaluation. 
 -- @see eval
 function literal.eval_number(str, grammar, filename)
@@ -585,7 +585,7 @@ end
 -- @string str the string. 
 -- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
 -- @string[opt] filename the filename to be used in error messages. 
--- @raise Errors similar to those of Lua compilers. 
+-- @raise Errors similar to those of Lua compiler. 
 -- @return[type=table] Result of evaluation. 
 -- @see eval
 function literal.eval_table(str, grammar, filename)

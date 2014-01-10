@@ -265,9 +265,11 @@ function literal.Cursor:eval_short_string()
             elseif self.char == 'x' then
                -- Hexadecimal escape
                self:step() -- Skip x
-               local code_str = self:assert(self:match '(%x%x)', "mailformed hexadecimal escape sequence")
+               local code_str = self.str:sub(self.i, self.i+1)
+               self:assert(code_str:match '(%x%x)',
+                  "hexadecimal digit expected", "'\\x" .. code_str:match '([^%s%c]*)' .. "'")
                self:step(2)
-               local code = self:assert(tonumber(code_str, 16), "mailformed hexadecimal escape sequence")
+               local code = tonumber(code_str, 16)
                buf:add(string.char(code))
             else
                self:invalid_escape()

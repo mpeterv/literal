@@ -70,6 +70,8 @@ describe("short strings", function()
       assert.equal('A\\Z', literal.eval_short_string([['\x41\\\x5A']], "5.2"))
       assert.equal('\\x\0\255', literal.eval_short_string([['\\x\x00\xFf']], "5.2"))
       assert.equal('\0' .. '0', literal.eval_short_string([['\x000']], "5.2"))
+      assert.errors(function() literal.eval_short_string([['\x4\\\x5A']], "5.2") end,
+         [=[[string "'\x4\\\x5A'"]:1: hexadecimal digit expected near '\x4\']=])
       assert.errors(function() literal.eval_short_string([['\x41\\\x5A']], "5.1") end,
          [=[[string "'\x41\\\x5A'"]:1: invalid escape sequence near '\x']=])
    end)
@@ -83,13 +85,15 @@ describe("short strings", function()
 end)
 
 describe("long strings", function()
-   it("doesn't eval garbage", function()
+   it("doesn't evaluate garbage", function()
       assert.errors(function() literal.eval_long_string'' end,
          "[string \"\"]:1: long string expected near <eof>")
       assert.errors(function() literal.eval_long_string'foo' end,
          "[string \"foo\"]:1: long string expected near 'foo'")
       assert.errors(function() literal.eval_long_string'\r\n\rfoo' end,
          "[string \"...\"]:3: long string expected near 'foo'")
+      assert.errors(function() literal.eval_long_string'\a' end,
+         "[string \"...\"]:1: long string expected near char(7)")
    end)
 
    it("evaluates empty strings", function()

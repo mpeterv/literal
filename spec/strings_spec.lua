@@ -3,11 +3,11 @@ local literal = require "literal"
 describe("short strings", function()
    it("doesn't eval garbage", function()
       assert.errors(function() literal.eval_short_string'' end,
-         "[string \"\"]:1: expected short string near <eof>")
+         "[string \"\"]:1: short string expected near <eof>")
       assert.errors(function() literal.eval_short_string'foo' end,
-         "[string \"foo\"]:1: expected short string near 'foo'")
+         "[string \"foo\"]:1: short string expected near 'foo'")
       assert.errors(function() literal.eval_short_string'\r\n\rfoo' end,
-         "[string \"...\"]:3: expected short string near 'foo'")
+         "[string \"...\"]:3: short string expected near 'foo'")
    end)
 
    it("evals empty strings", function()
@@ -70,11 +70,11 @@ end)
 describe("long strings", function()
    it("doesn't eval garbage", function()
       assert.errors(function() literal.eval_long_string'' end,
-         "[string \"\"]:1: expected long string near <eof>")
+         "[string \"\"]:1: long string expected near <eof>")
       assert.errors(function() literal.eval_long_string'foo' end,
-         "[string \"foo\"]:1: expected long string near 'foo'")
+         "[string \"foo\"]:1: long string expected near 'foo'")
       assert.errors(function() literal.eval_long_string'\r\n\rfoo' end,
-         "[string \"...\"]:3: expected long string near 'foo'")
+         "[string \"...\"]:3: long string expected near 'foo'")
    end)
 
    it("evals empty strings", function()

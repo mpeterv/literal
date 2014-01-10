@@ -165,7 +165,7 @@ function literal.Cursor:finish()
 end
 
 function literal.Cursor:eval_long_string()
-   local second_opening_bracket = self:assert(self:match '%[=*()%[', "expected long string")
+   local second_opening_bracket = self:assert(self:match '%[=*()%[', "long string expected")
 
    local level = second_opening_bracket-self.i-1
    self:jump(second_opening_bracket+1)
@@ -200,7 +200,7 @@ local escapes = {
 }
 
 function literal.Cursor:eval_short_string()
-   self:assert(self:match '[\'"]', "expected short string")
+   self:assert(self:match '[\'"]', "short string expected")
 
    local quote = self.char
    local buf = buffer()
@@ -287,7 +287,7 @@ function literal.Cursor:eval_sign()
 end
 
 function literal.Cursor:eval_number()
-   self:assert(self:match '[%+%-%.%x]', "expected numerical constant")
+   self:assert(self:match '[%+%-%.%x]', "numerical constant expected")
    local mul = self:eval_sign()
    local res
 
@@ -398,7 +398,7 @@ local keywords = {
 }
 
 function literal.Cursor:eval_table()
-   self:assert(self.char == '{', "expected table literal")
+   self:assert(self.char == '{', "table literal expected")
    local t = {}
    local n = 0
    local k, v
@@ -420,7 +420,7 @@ function literal.Cursor:eval_table()
             self:skip_space_and_comments()
             k = self:eval()
             self:skip_space_and_comments()
-            self:assert(self.char == ']', "expected ']'")
+            self:assert(self.char == ']', "']' expected")
             self:step()
          end
       elseif self:match '[_%a][_%a%d]*%s*=' then
@@ -436,7 +436,7 @@ function literal.Cursor:eval_table()
 
       if key_value then
          self:skip_space_and_comments()
-         self:assert(self.char == '=', "expected '='")
+         self:assert(self.char == '=', "'=' expected")
          self:step()
          self:skip_space_and_comments()
          v = self:eval()
@@ -480,7 +480,7 @@ function literal.Cursor:eval()
    elseif self.char == '{' then
       return self:eval_table()
    else
-      self:error("expected literal")
+      self:error("literal expected")
    end
 end
 
@@ -518,7 +518,7 @@ function literal.eval_string(str, grammar, filename)
    elseif cur:match '%[=*%[' then
       res = cur:eval_long_string()
    else 
-      self:error("expected string literal")
+      self:error("string expected")
    end
 
    cur:finish()

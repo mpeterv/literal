@@ -67,10 +67,12 @@ function literal.Cursor:error(msg, chunk)
 
    if not chunk then
       self:skip_space_and_comments()
-      chunk = self:match("([_%d%a]+)")
+      chunk = self:match("([^%s%c]+)")
 
       if chunk then
          chunk = "'" .. chunk .. "'"
+      elseif self:match '%c' then
+         chunk = "char(" .. self.char:byte() .. ")"
       else
          chunk = "<eof>"
       end
@@ -214,12 +216,11 @@ local escapes = {
 
 function literal.Cursor:eval_short_string()
    self:assert(self:match '[\'"]', "short string expected")
-
    local quote = self.char
    local buf = buffer()
-
    self:step()
    local chunk_start = self.i
+
    while self.char ~= quote do
       self:assert(self:match '[^\r\n]', "unfinished string")
 
@@ -416,7 +417,7 @@ function literal.Cursor:eval_table()
    local n = 0
    local k, v
    local key_value
-   local line_start = self.line
+   local start_line = self.line
    self:step()
 
    while true do
@@ -467,8 +468,8 @@ function literal.Cursor:eval_table()
       else
          local msg = "'}' expected"
 
-         if self.line ~= line_start then
-            msg = msg .. " (to close '{' at line " .. line_start .. ")"
+         if self.line ~= start_line then
+            msg = msg .. " (to close '{' at line " .. start_line .. ")"
          end
 
          self:assert(self.char == '}', msg)

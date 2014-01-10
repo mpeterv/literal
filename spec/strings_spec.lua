@@ -54,9 +54,9 @@ describe("short strings", function()
       assert.equal('foo\nbar', literal.eval_short_string([['foo\]] .. '\r\n' .. [[bar']]))
       assert.equal('foo\nbar', literal.eval_short_string([['foo\]] .. '\n\r' .. [[bar']]))
       assert.errors(function() literal.eval_short_string([['foo\]] .. '\n\n' .. [[bar']]) end,
-         "[string \"'foo\\...\"]:2: unfinished string near 'bar'")
+         "[string \"'foo\\...\"]:2: unfinished string near 'bar''")
       assert.errors(function() literal.eval_short_string([['foo\]] .. '\r\r' .. [[bar']]) end,
-         "[string \"'foo\\...\"]:2: unfinished string near 'bar'")
+         "[string \"'foo\\...\"]:2: unfinished string near 'bar''")
    end)
 
    it("evaluates strings with decimal escape sequences", function()

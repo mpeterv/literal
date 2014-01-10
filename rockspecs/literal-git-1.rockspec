@@ -18,5 +18,7 @@ build = {
    modules = {
       literal = "src/literal.lua"
    },
-   copy_directories = {}
+   copy_directories = {
+      doc
+   }
 }

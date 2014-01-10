@@ -1,7 +1,14 @@
+--- A library for safely evaluating Lua literal expressions. 
+-- @module literal
+-- @author Peter Melnichenko
+-- @license Public Domain
 local literal = {}
 
 local class = require "30log"
 
+
+--- Default grammar is the Lua version used to run literal. 
+-- @field grammar
 if _VERSION:find "5.2" then
    literal.grammar = "5.2"
 else
@@ -484,6 +491,19 @@ function literal.Cursor:eval()
    end
 end
 
+
+--- Main evaluation function. 
+--
+-- Tries to evaluate a given string as a Lua literal. 
+-- Correct literals are "nil", "true", "false", decimal and hexadecimal numerical constants, short and long strings, and tables of other literals. 
+--
+-- Comments are considered whitespace. 
+-- Non-whitespace after a correct literal is an error. 
+-- @string str the string. 
+-- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
+-- @string[opt] filename the filename to be used in error messages. 
+-- @raise Errors similar to those of Lua compilers. 
+-- @return[type=nil|boolean|number|string|table] Result of evaluation. 
 function literal.eval(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
@@ -492,6 +512,13 @@ function literal.eval(str, grammar, filename)
    return res
 end
 
+---Only evaluates short literal strings. 
+-- @string str the string. 
+-- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
+-- @string[opt] filename the filename to be used in error messages. 
+-- @raise Errors similar to those of Lua compilers. 
+-- @return[type=string] Result of evaluation. 
+-- @see eval
 function literal.eval_short_string(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
@@ -500,6 +527,13 @@ function literal.eval_short_string(str, grammar, filename)
    return res
 end
 
+--- Only evaluates long literal strings. 
+-- @string str the string. 
+-- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
+-- @string[opt] filename the filename to be used in error messages. 
+-- @raise Errors similar to those of Lua compilers. 
+-- @return[type=string] Result of evaluation. 
+-- @see eval
 function literal.eval_long_string(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
@@ -508,6 +542,13 @@ function literal.eval_long_string(str, grammar, filename)
    return res
 end
 
+--- Only evaluates literal strings. 
+-- @string str the string. 
+-- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
+-- @string[opt] filename the filename to be used in error messages. 
+-- @raise Errors similar to those of Lua compilers. 
+-- @return[type=string] Result of evaluation. 
+-- @see eval
 function literal.eval_string(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
@@ -525,6 +566,13 @@ function literal.eval_string(str, grammar, filename)
    return res
 end
 
+--- Only evaluates numerical constants. 
+-- @string str the string. 
+-- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
+-- @string[opt] filename the filename to be used in error messages. 
+-- @raise Errors similar to those of Lua compilers. 
+-- @return[type=number] Result of evaluation. 
+-- @see eval
 function literal.eval_number(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
@@ -533,6 +581,13 @@ function literal.eval_number(str, grammar, filename)
    return res
 end
 
+--- Only evaluates literal tables. 
+-- @string str the string. 
+-- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
+-- @string[opt] filename the filename to be used in error messages. 
+-- @raise Errors similar to those of Lua compilers. 
+-- @return[type=table] Result of evaluation. 
+-- @see eval
 function literal.eval_table(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()

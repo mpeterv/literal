@@ -84,7 +84,7 @@ For more information, see [documentation](#documentation).
 
 ## Documentation
 
-[LDoc](http://stevedonovan.github.io/ldoc/) generated documentation is availible in `doc` directory. It can be viewed online [here](https://mpeterv.github.io/literal). 
+[LDoc](http://stevedonovan.github.io/ldoc/) generated documentation is available in `doc` directory. It can be viewed online [here](https://mpeterv.github.io/literal). 
 
 ## Installation
 

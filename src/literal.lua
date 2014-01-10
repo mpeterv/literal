@@ -62,31 +62,29 @@ function literal.Cursor:__init(str, grammar, filename)
    end
 end
 
-function literal.Cursor:error(fmt, ...)
+function literal.Cursor:error(msg, chunk)
    local line = self.line
-   local msg = fmt:format(...)
-   self:skip_space_and_comments()
-   local chunk = self:match("([_%d%a]+)")
 
-   if chunk then
-      chunk = "'" .. chunk .. "'"
-   else
-      chunk = "<eof>"
+   if not chunk then
+      self:skip_space_and_comments()
+      chunk = self:match("([_%d%a]+)")
+
+      if chunk then
+         chunk = "'" .. chunk .. "'"
+      else
+         chunk = "<eof>"
+      end
    end
 
    error(("%s:%d: %s near %s"):format(self.repr, line, msg, chunk))
 end
 
-function literal.Cursor:assert(assertion, ...)
-   return assertion or self:error(...)
+function literal.Cursor:assert(assertion, msg, chunk)
+   return assertion or self:error(msg, chunk)
 end
 
 function literal.Cursor:invalid_escape()
-   local line = self.line
-   local msg = "invalid escape sequence"
-   local chunk = "'" .. '\\' .. self:match("(%C?)") .. "'"
-
-   error(("%s:%d: %s near %s"):format(self.repr, line, msg, chunk))
+   self:error("invalid escape sequence", "'\\" .. self:match '(%C?)' .. "'")
 end
 
 -- Can only jump forward
@@ -253,8 +251,9 @@ function literal.Cursor:eval_short_string()
             end
 
             -- i now points to first char not in escape
-            local code = tonumber(self.str:sub(start_i, self.i-1))
-            self:assert(code and code < 256, "mailformed decimal escape sequence")
+            local code_str = self.str:sub(start_i, self.i-1)
+            local code = tonumber(code_str)
+            self:assert(code and code < 256, "decimal escape too large", "'\\" .. code_str .. "'")
             buf:add(string.char(code))
          elseif self.grammar == "5.2" then
             -- Lua 5.2 things
@@ -265,11 +264,9 @@ function literal.Cursor:eval_short_string()
             elseif self.char == 'x' then
                -- Hexadecimal escape
                self:step() -- Skip x
-               self:assert(self:match '%x%x', "mailformed hexadecimal escape sequence")
+               local code_str = self:assert(self:match '(%x%x)', "mailformed hexadecimal escape sequence")
                self:step(2)
-               local code = self:assert(tonumber(self.str:sub(self.i-2, self.i-1), 16),
-                  "mailformed hexadecimal escape sequence"
-               )
+               local code = self:assert(tonumber(code_str, 16), "mailformed hexadecimal escape sequence")
                buf:add(string.char(code))
             else
                self:invalid_escape()
@@ -468,7 +465,7 @@ function literal.Cursor:eval_table()
       if self:match '[,;]' then
          self:step()
       else
-         self:assert(self.char == '}', "'}' expected (to close '{' at line %d)", line_start)
+         self:assert(self.char == '}', ("'}' expected (to close '{' at line %d)"):format(line_start))
       end
    end
 end

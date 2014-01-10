@@ -62,6 +62,8 @@ describe("short strings", function()
    it("evaluates strings with decimal escape sequences", function()
       assert.equal('\afo\no\0002\1bar', literal.eval_short_string[['\afo\no\0002\1bar']])
       assert.equal('\\\255\00\0\1111', literal.eval_short_string[['\\\255\00\0\1111']])
+      assert.errors(function() literal.eval_short_string[['foo\912bar']] end,
+         [=[[string "'foo\912bar'"]:1: decimal escape too large near '\912']=])
    end)
 
    it("evaluates strings with hexadecimal escape sequences with Lua 5.2 grammar", function()

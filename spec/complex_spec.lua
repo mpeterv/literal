@@ -1,6 +1,5 @@
 local literal = require "literal"
 local serpent = require "serpent"
-local refser = require "refser"
 
 local function random_var(is_key, deep)
    local key = math.random(1000)
@@ -13,7 +12,9 @@ local function random_var(is_key, deep)
       end
    elseif key <= 200 then
       return false
-   elseif key <= 500 then
+   elseif key <= 300 then
+      return true
+   elseif key <= 600 then
       return math.random(-1e6, 1e6)
    elseif key <= 900 then
       local len = math.random(0, 100)

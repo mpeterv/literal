@@ -81,6 +81,14 @@ function literal.Cursor:assert(assertion, ...)
    return assertion or self:error(...)
 end
 
+function literal.Cursor:invalid_escape()
+   local line = self.line
+   local msg = "invalid escape sequence"
+   local chunk = "'" .. '\\' .. self:match("(%C?)") .. "'"
+
+   error(("%s:%d: %s near %s"):format(self.repr, line, msg, chunk))
+end
+
 -- Can only jump forward
 function literal.Cursor:jump(i)
    assert(i <= self.len)
@@ -223,6 +231,7 @@ function literal.Cursor:eval_short_string()
 
          -- Escape sequence
          self:step()
+         self:assert(self.char ~= '', "unfinished string")
 
          if escapes[self.char] then
             -- Regular escape
@@ -263,10 +272,10 @@ function literal.Cursor:eval_short_string()
                )
                buf:add(string.char(code))
             else
-               self:error("invalid escape sequence")
+               self:invalid_escape()
             end
          else
-            self:error("invalid escape sequence")
+            self:invalid_escape()
          end
 
          chunk_start = self.i

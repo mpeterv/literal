@@ -465,7 +465,13 @@ function literal.Cursor:eval_table()
       if self:match '[,;]' then
          self:step()
       else
-         self:assert(self.char == '}', ("'}' expected (to close '{' at line %d)"):format(line_start))
+         local msg = "'}' expected"
+
+         if self.line ~= line_start then
+            msg = msg .. " (to close '{' at line " .. line_start .. ")"
+         end
+
+         self:assert(self.char == '}', msg)
       end
    end
 end

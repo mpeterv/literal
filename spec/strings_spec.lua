@@ -68,11 +68,15 @@ describe("short strings", function()
       assert.equal('A\\Z', literal.eval_short_string([['\x41\\\x5A']], "5.2"))
       assert.equal('\\x\0\255', literal.eval_short_string([['\\x\x00\xFf']], "5.2"))
       assert.equal('\0' .. '0', literal.eval_short_string([['\x000']], "5.2"))
+      assert.errors(function() literal.eval_short_string([['\x41\\\x5A']], "5.1") end,
+         [=[[string "'\x41\\\x5A'"]:1: invalid escape sequence near '\x']=])
    end)
 
    it("evaluates strings with z escape sequences with Lua 5.2 grammar", function()
       assert.equal('foobar', literal.eval_short_string([['foo\z]] .. '\n \f \t\n\rbar' .. [[']], "5.2"))
       assert.equal('\nfoo\n', literal.eval_short_string([['\nfo\zo\n']], "5.2"))
+      assert.errors(function() literal.eval_short_string([['\nfo\zo\n']], "5.1") end,
+         [=[[string "'\nfo\zo\n'"]:1: invalid escape sequence near '\z']=])
    end)
 end)
 
@@ -93,9 +97,10 @@ describe("long strings", function()
    end)
 
    it("doesn't evaluate unfinished strings", function()
-      assert.equal('', literal.eval_long_string'[[]]')
-      assert.equal('', literal.eval_long_string'[=[]=]')
-      assert.equal('', literal.eval_long_string'[===[]===]')
+      assert.errors(function() literal.eval_long_string'[[\n' end,
+         [=[[string "[[..."]:2: unfinished long string near <eof>]=])
+      assert.errors(function() literal.eval_long_string'[=[]]]==]' end,
+         [=[[string "[=[]]]==]"]:1: unfinished long string near <eof>]=])
    end)
 
    it("evaluates simple strings", function()

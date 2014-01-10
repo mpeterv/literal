@@ -27,20 +27,25 @@ end
 literal.Cursor = class()
 literal.Cursor.max_repr_length = 45
 
-function literal.Cursor:__init(str, grammar)
+function literal.Cursor:__init(str, grammar, filename)
    self.str = str
    self.grammar = grammar or literal.grammar
    self.len = str:len()+1
    self.i = 1
    self.char = str:sub(1, 1)
    self.line = 1
-   self.repr = self:match("([ %p%d%a]+)") or ""
 
-   if self.repr:len() > self.max_repr_length or self.repr:len() ~= str:len() then
-      self.repr = self.repr:sub(1, self.max_repr_length) .. "..."
+   if filename then
+      self.repr = filename
+   else
+      self.repr = self:match("([ %p%d%a]+)") or ""
+
+      if self.repr:len() > self.max_repr_length or self.repr:len() ~= str:len() then
+         self.repr = self.repr:sub(1, self.max_repr_length) .. "..."
+      end
+
+      self.repr = ("[string \"%s\"]"):format(self.repr)
    end
-
-   self.repr = ("[string \"%s\"]"):format(self.repr)
 
    -- Is current char the first half of two-chars newline?
    if self:match '\r\n' or self:match '\n\r' then
@@ -155,7 +160,7 @@ end
 
 function literal.Cursor:finish()
    self:skip_space_and_comments()
-   self:assert(self.i == self.len, "unexpected garbage")
+   self:assert(self.i == self.len, "<eof> expected")
    return self
 end
 
@@ -447,7 +452,7 @@ function literal.Cursor:load_table()
       if self:match '[,;]' then
          self:step()
       else
-         self:assert(self.char == '}', "expected '}' (to close '{' at line %d)", line_start)
+         self:assert(self.char == '}', "'}' expected (to close '{' at line %d)", line_start)
       end
    end
 end
@@ -479,32 +484,32 @@ function literal.Cursor:load()
    end
 end
 
-function literal.load(str, grammar)
-   local cur = literal.Cursor(str, grammar)
+function literal.load(str, grammar, filename)
+   local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
    local res = cur:load()
    cur:finish()
    return res
 end
 
-function literal.load_short_string(str, grammar)
-   local cur = literal.Cursor(str, grammar)
+function literal.load_short_string(str, grammar, filename)
+   local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
    local res = cur:load_short_string()
    cur:finish()
    return res
 end
 
-function literal.load_long_string(str, grammar)
-   local cur = literal.Cursor(str, grammar)
+function literal.load_long_string(str, grammar, filename)
+   local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
    local res = cur:load_long_string()
    cur:finish()
    return res
 end
 
-function literal.load_string(str, grammar)
-   local cur = literal.Cursor(str, grammar)
+function literal.load_string(str, grammar, filename)
+   local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
    local res
 
@@ -520,16 +525,16 @@ function literal.load_string(str, grammar)
    return res
 end
 
-function literal.load_number(str, grammar)
-   local cur = literal.Cursor(str, grammar)
+function literal.load_number(str, grammar, filename)
+   local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
    local res = cur:load_number()
    cur:finish()
    return res
 end
 
-function literal.load_table(str, grammar)
-   local cur = literal.Cursor(str, grammar)
+function literal.load_table(str, grammar, filename)
+   local cur = literal.Cursor(str, grammar, filename)
    cur:skip_space_and_comments()
    local res = cur:load_table()
    cur:finish()

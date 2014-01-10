@@ -104,9 +104,9 @@ describe("long strings", function()
 
    it("doesn't evaluate unfinished strings", function()
       assert.errors(function() literal.eval_long_string'[[\n' end,
-         [=[[string "[[..."]:2: unfinished long string near <eof>]=])
+         [=[[string "[[..."]:1: unfinished long string near '[[']=])
       assert.errors(function() literal.eval_long_string'[=[]]]==]' end,
-         [=[[string "[=[]]]==]"]:1: unfinished long string near <eof>]=])
+         [=[[string "[=[]]]==]"]:1: unfinished long string near '[=[]]]==]']=])
    end)
 
    it("evaluates simple strings", function()

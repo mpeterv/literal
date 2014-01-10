@@ -177,6 +177,7 @@ function literal.Cursor:finish()
 end
 
 function literal.Cursor:eval_long_string()
+   local errmsg = self:errormsg("unfinished long string")
    local second_opening_bracket = self:assert(self:match '%[=*()%[', "long string expected")
 
    local level = second_opening_bracket-self.i-1
@@ -190,8 +191,7 @@ function literal.Cursor:eval_long_string()
    local str, next_i = self:match(patt)
 
    if not str then
-      self:jump(self.len)
-      self:error("unfinished long string")
+      error(errmsg)
    end
 
    self:jump(next_i)

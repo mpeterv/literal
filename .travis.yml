@@ -1,0 +1,19 @@
+language: c
+
+install:
+  - curl -R -O http://www.lua.org/ftp/lua-5.2.3.tar.gz
+  - tar zxf lua-5.2.3.tar.gz
+  - cd lua-5.2.3
+  - make linux
+  - sudo make install
+  - cd ..
+  - curl -R -O http://luarocks.org/releases/luarocks-2.1.1.tar.gz
+  - tar zxf luarocks-2.1.1.tar.gz
+  - cd luarocks-2.1.1
+  - ./configure
+  - make
+  - sudo make install
+  - cd ..
+  - sudo luarocks make rockspecs/literal-git-1.rockspec
+
+script: "busted spec"

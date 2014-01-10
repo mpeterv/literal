@@ -1,5 +1,3 @@
- -- occasionaly fails due to bug in serpent: https://github.com/pkulchenko/serpent/issues/13
-
 local literal = require "literal"
 local serpent = require "serpent"
 local refser = require "refser"
@@ -52,7 +50,7 @@ describe("randomized test", function()
 
       for i=1, 100 do
          local x = random_var(false, 0)
-         local s = serpent.block(x)
+         local s = serpent.block(x, {sortkeys=false})
          local x2 = literal.eval(s)
          assert.same(x, x2)
       end

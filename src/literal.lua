@@ -317,16 +317,16 @@ function literal.Cursor:eval_number()
          local integer_str, next_i = self:match '(%x+)()'
 
          if not integer_str then
-            self:error("mailformed hexadecimal constant")
+            self:error("malformed number")
          end
 
-         res = self:assert(tonumber(integer_str, 16), "mailformed hexadecimal constant")
+         res = self:assert(tonumber(integer_str, 16), "malformed number")
          self:jump(next_i)
       else
          local integer_str, next_i = self:match '(%x*)()'
 
          if not integer_str then
-            self:error("mailformed hexadecimal constant")
+            self:error("malformed number")
          end
 
          local integer
@@ -334,7 +334,7 @@ function literal.Cursor:eval_number()
          if integer_str == '' then
             integer = 0
          else
-            integer = self:assert(tonumber(integer_str, 16), "mailformed hexadecimal constant")
+            integer = self:assert(tonumber(integer_str, 16), "malformed number")
          end
 
          self:jump(next_i)
@@ -345,16 +345,16 @@ function literal.Cursor:eval_number()
             local fract_str, next_i = self:match '(%x*)()'
 
             if not fract_str then
-               self:error("mailformed hexadecimal constant")
+               self:error("malformed number")
             end
 
             self:jump(next_i)
 
             if fract_str == '' then
-               self:assert(integer_str ~= '', "mailformed hexadecimal constant")
+               self:assert(integer_str ~= '', "malformed number")
                fract = 0
             else
-               fract = self:assert(tonumber(fract_str, 16), "mailformed hexadecimal constant")
+               fract = self:assert(tonumber(fract_str, 16), "malformed number")
                fract = fract / 16^fract_str:len()
             end
          end
@@ -366,11 +366,11 @@ function literal.Cursor:eval_number()
             local pow_str, next_i = self:match '(%d+)()'
 
             if not pow_str then
-               self:error("mailformed hexadecimal constant")
+               self:error("malformed number")
             end
 
             self:jump(next_i)
-            local pow = self:assert(tonumber(pow_str), "mailformed hexadecimal constant")*pow_mul
+            local pow = self:assert(tonumber(pow_str), "malformed number")*pow_mul
             mul = mul * 2^pow
          end
 
@@ -381,10 +381,10 @@ function literal.Cursor:eval_number()
       local number, next_i = self:match '([%+%-%.%deE]+)()'
 
       if not number then
-         self:error("mailformed decimal constant")
+         self:error("malformed number")
       end
 
-      res = self:assert(tonumber(number), "mailformed decimal constant")
+      res = self:assert(tonumber(number), "malformed number")
       self:jump(next_i)
    end
 
@@ -501,7 +501,7 @@ function literal.Cursor:eval()
       return self:eval_short_string()
    elseif self:match '%[=*%[' then
       return self:eval_long_string()
-   elseif self:match '[%+%-%d]' then
+   elseif self:match '[%.%+%-%d]' then
       return self:eval_number()
    elseif self.char == '{' then
       return self:eval_table()

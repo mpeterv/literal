@@ -415,6 +415,12 @@ local keywords = {
    ["while"] = true
 }
 
+local literals = {
+   ["nil"] = {nil},
+   ["true"] = {true},
+   ["false"] = {false}
+}
+
 function literal.Cursor:eval_table()
    self:assert(self.char == '{', "table literal expected")
    local t = {}
@@ -433,23 +439,25 @@ function literal.Cursor:eval_table()
          return t
       elseif self.char == '[' then
          if not self:match '%[=*%[' then
-            key_value = true
             self:step()
             self:skip_space_and_comments()
             k = self:eval()
             self:skip_space_and_comments()
             self:assert(self.char == ']', "']' expected")
             self:step()
+            key_value = true
          end
-      elseif self:match '[_%a][_%a%d]*%s*=' then
-         key_value = true
+      elseif self:match '[_%a][_%a%d]*' then
          k = self:match '([_%a][_%a%d]*)'
 
-         if keywords[k] or self.grammar == "5.2" and k == "goto" then
-            self:error("unexpected symbol")
-         end
+         if not literals[k] then
+            if keywords[k] or self.grammar == "5.2" and k == "goto" then
+               self:error("unexpected symbol")
+            end
 
-         self:step(k:len())
+            self:step(k:len())
+            key_value = true
+         end
       end
 
       if key_value then
@@ -480,12 +488,6 @@ function literal.Cursor:eval_table()
       end
    end
 end
-
-local literals = {
-   ["nil"] = {nil},
-   ["true"] = {true},
-   ["false"] = {false}
-}
 
 function literal.Cursor:eval()
    for lit, val in pairs(literals) do

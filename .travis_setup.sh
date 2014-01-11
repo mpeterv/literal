@@ -2,38 +2,32 @@
 # Sets up Lua and Luarocks. 
 # LUA must be "Lua 5.1", "Lua 5.2" or "LuaJIT 2.0". 
 
-case $LUA in
-  "Lua 5.1")
-    LUA_URL="http://www.lua.org/ftp/lua-5.1.5.tar.gz"
-    LUA_DIR="lua-5.1.5"
-    LUA_BUILD_COMMAND="sudo make linux install"
-  ;;
-  "Lua 5.2")
-    LUA_URL="http://www.lua.org/ftp/lua-5.2.3.tar.gz"
-    LUA_DIR="lua-5.2.3"
-    LUA_BUILD_COMMAND="sudo make linux install"
-  ;;
-  "LuaJIT 2.0")
-    LUA_URL="http://luajit.org/download/LuaJIT-2.0.2.tar.gz"
-    LUA_DIR="LuaJIT-2.0.2"
-    LUA_BUILD_COMMAND="make && sudo make install"
-  ;;
-esac
+if [ "$LUA" == "LuaJIT 2.0" ]; then
+  curl http://luajit.org/download/LuaJIT-2.0.2.tar.gz | tar xz
+  cd LuaJIT-2.0.2
+  make && sudo make install
+  cd ..;
+else
+  if [ "$LUA" == "Lua 5.1" ]; then
+    curl http://www.lua.org/ftp/lua-5.1.5.tar.gz | tar xz
+    cd lua-5.1.5;
+  elif [ "$LUA" == "Lua 5.2" ]; then
+    curl http://www.lua.org/ftp/lua-5.2.3.tar.gz | tar xz
+    cd lua-5.2.3;
+  fi
 
-LUAROCKS_URL="http://luarocks.org/releases/luarocks-2.1.1.tar.gz"
-LUAROCKS_DIR="luarocks-2.1.1"
-LUAROCKS_BUILD_COMMAND="./configure && make && sudo make install"
+  sudo make linux install
+  cd ..;
+fi
 
-# Install Lua
-curl $LUA_URL | tar xz
-cd $LUA_DIR
-eval $LUA_BUILD_COMMAND
+curl http://luarocks.org/releases/luarocks-2.1.1.tar.gz | tar xz
+cd luarocks-2.1.1
+
+if [ "$LUA" == "LuaJIT 2.0" ]; then
+  ./configure --lua-suffix=jit;
+else
+  ./configure;
+fi
+
+make && sudo make install
 cd ..
-
-# Install Luarocks
-curl $LUAROCKS_URL | tar xz
-cd $LUAROCKS_DIR
-eval $LUAROCKS_BUILD_COMMAND
-cd ..
-
-# Done!

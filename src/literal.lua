@@ -15,22 +15,6 @@ literal.max_nesting = 200
 --- Maximum length of string representation in error messages. Default is 45. 
 literal.max_repr_length = 45
 
-local buffer = class()
-
-function buffer:__init()
-   self.n = 0
-end
-
-function buffer:add(s)
-   self.n = self.n+1
-   self[self.n] = s
-   return self
-end
-
-function buffer:res()
-   return table.concat(self)
-end
-
 literal.Cursor = class()
 
 function literal.Cursor:__init(str, grammar, filename)
@@ -214,7 +198,7 @@ function literal.Cursor:eval_short_string()
    self:assert(self:match "['\"]", "short string expected")
    local quote = self.char
    local errmsg = self:errormsg("unfinished string")
-   local buf = buffer()
+   local buf = {}
    self:step()
    local chunk_start = self.i
 
@@ -226,7 +210,7 @@ function literal.Cursor:eval_short_string()
       if self.char == "\\" then
          -- Escape sequence
          -- Cut chunk
-         buf:add(self.str:sub(chunk_start, self.i-1))
+         table.insert(buf, self.str:sub(chunk_start, self.i-1))
          self:step()
 
          if self.char == "" then
@@ -235,11 +219,11 @@ function literal.Cursor:eval_short_string()
 
          if escapes[self.char] then
             -- Regular escape
-            buf:add(escapes[self.char])
+            table.insert(buf, escapes[self.char])
             self:step()
          elseif self:match "[\r\n]" then
             -- Must replace with \n
-            buf:add("\n")
+            table.insert(buf, "\n")
             self:skip_newline()
          elseif self:match "%d" then
             -- Decimal escape
@@ -256,7 +240,7 @@ function literal.Cursor:eval_short_string()
             local code_str = self.str:sub(start_i, self.i-1)
             local code = tonumber(code_str)
             self:assert(code and code < 256, "decimal escape too large", "'\\" .. code_str .. "'")
-            buf:add(string.char(code))
+            table.insert(buf, string.char(code))
          elseif self.grammar == "5.2" then
             -- Lua 5.2 things
 
@@ -271,7 +255,7 @@ function literal.Cursor:eval_short_string()
                   "hexadecimal digit expected", "'\\x" .. code_str:match "([^%s%c]*)" .. "'")
                self:step(2)
                local code = tonumber(code_str, 16)
-               buf:add(string.char(code))
+               table.insert(buf, string.char(code))
             else
                self:invalid_escape()
             end
@@ -287,9 +271,9 @@ function literal.Cursor:eval_short_string()
    end
 
    -- Add last chunk
-   buf:add(self.str:sub(chunk_start, self.i-1))
+   table.insert(buf, self.str:sub(chunk_start, self.i-1))
    self:step()
-   return buf:res()
+   return table.concat(buf)
 end
 
 function literal.Cursor:eval_sign()

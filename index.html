@@ -30,6 +30,7 @@
 <h2>Contents</h2>
 <ul>
 <li><a href="#Functions">Functions</a></li>
+<li><a href="#Fields">Fields</a></li>
 </ul>
 
 
@@ -48,8 +49,8 @@
 <p></p>
     <h3>Info:</h3>
     <ul>
-        <li><strong>Author</strong>: Peter Melnichenko</li>
         <li><strong>License</strong>: Public Domain</li>
+        <li><strong>Author</strong>: Peter Melnichenko</li>
     </ul>
 
 
@@ -57,27 +58,26 @@
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#eval">eval&nbsp;(str [, grammar [, filename]])</a></td>
-	<td class="summary">Main evaluation function.</td>
+	<td class="summary">Tries to evaluate a given string as a Lua literal.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#eval_short_string">eval_short_string&nbsp;(str [, grammar [, filename]])</a></td>
-	<td class="summary">Only evaluates short literal strings.</td>
+	<td class="name" nowrap><a href="#eval_config">eval_config&nbsp;(str [, grammar [, filename]])</a></td>
+	<td class="summary">Tries to evaluate a given string as a config file.</td>
+	</tr>
+</table>
+<h2><a href="#Fields">Fields</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#grammar">grammar</a></td>
+	<td class="summary">Default grammar to be used by evaluation functions.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#eval_long_string">eval_long_string&nbsp;(str [, grammar [, filename]])</a></td>
-	<td class="summary">Only evaluates long literal strings.</td>
+	<td class="name" nowrap><a href="#max_nesting">max_nesting</a></td>
+	<td class="summary">Maximum nesting level of table literals.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#eval_string">eval_string&nbsp;(str [, grammar [, filename]])</a></td>
-	<td class="summary">Only evaluates literal strings.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#eval_number">eval_number&nbsp;(str [, grammar [, filename]])</a></td>
-	<td class="summary">Only evaluates numerical constants.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#eval_table">eval_table&nbsp;(str [, grammar [, filename]])</a></td>
-	<td class="summary">Only evaluates literal tables.</td>
+	<td class="name" nowrap><a href="#max_repr_length">max_repr_length</a></td>
+	<td class="summary">Maximum length of string representation in error messages.</td>
 	</tr>
 </table>
 
@@ -92,11 +92,11 @@
     <strong>eval&nbsp;(str [, grammar [, filename]])</strong>
     </dt>
     <dd>
-    Main evaluation function.
-<p> Tries to evaluate a given string as a Lua literal.
+    Tries to evaluate a given string as a Lua literal.
  Correct literals are "nil", "true", "false", decimal and hexadecimal numerical constants, short and long strings, and tables of other literals.
 <p> Comments are considered whitespace.
  Non-whitespace after a correct literal is an error.
+
 
     <h3>Parameters:</h3>
     <ul>
@@ -125,159 +125,15 @@
 
 </dd>
     <dt>
-    <a name = "eval_short_string"></a>
-    <strong>eval_short_string&nbsp;(str [, grammar [, filename]])</strong>
+    <a name = "eval_config"></a>
+    <strong>eval_config&nbsp;(str [, grammar [, filename]])</strong>
     </dt>
     <dd>
-    Only evaluates short literal strings.
+    Tries to evaluate a given string as a config file.
+ Config is a string consisting of pairs "&lt;string&gt; = &lt;literal&gt;", separated by whitespace and optional semicolons.
+ &lt;string&gt; must be a valid Lua name or keyword.
+ Config is interpreted as a table with these strings as keys and corresponding literals as values.
 
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">str</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
-         the string.</li>
-        <li><span class="parameter">grammar</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
-         the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module.</li>
-        <li><span class="parameter">filename</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
-         the filename to be used in error messages.</li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-          <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
-        Result of evaluation.
-    </ol>
-
-    <h3>Raises:</h3>
-    Errors similar to those of Lua compiler.
-
-    <h3>see also:</h3>
-    <ul>
-         <a href="index.html#eval">eval</a>
-    </ul>
-
-
-</dd>
-    <dt>
-    <a name = "eval_long_string"></a>
-    <strong>eval_long_string&nbsp;(str [, grammar [, filename]])</strong>
-    </dt>
-    <dd>
-    Only evaluates long literal strings.
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">str</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
-         the string.</li>
-        <li><span class="parameter">grammar</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
-         the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module.</li>
-        <li><span class="parameter">filename</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
-         the filename to be used in error messages.</li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-          <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
-        Result of evaluation.
-    </ol>
-
-    <h3>Raises:</h3>
-    Errors similar to those of Lua compiler.
-
-    <h3>see also:</h3>
-    <ul>
-         <a href="index.html#eval">eval</a>
-    </ul>
-
-
-</dd>
-    <dt>
-    <a name = "eval_string"></a>
-    <strong>eval_string&nbsp;(str [, grammar [, filename]])</strong>
-    </dt>
-    <dd>
-    Only evaluates literal strings.
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">str</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
-         the string.</li>
-        <li><span class="parameter">grammar</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
-         the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module.</li>
-        <li><span class="parameter">filename</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
-         the filename to be used in error messages.</li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-          <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
-        Result of evaluation.
-    </ol>
-
-    <h3>Raises:</h3>
-    Errors similar to those of Lua compiler.
-
-    <h3>see also:</h3>
-    <ul>
-         <a href="index.html#eval">eval</a>
-    </ul>
-
-
-</dd>
-    <dt>
-    <a name = "eval_number"></a>
-    <strong>eval_number&nbsp;(str [, grammar [, filename]])</strong>
-    </dt>
-    <dd>
-    Only evaluates numerical constants.
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">str</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
-         the string.</li>
-        <li><span class="parameter">grammar</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
-         the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module.</li>
-        <li><span class="parameter">filename</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
-         the filename to be used in error messages.</li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-          <span class="types"><span class="type">number</span></span>
-        Result of evaluation.
-    </ol>
-
-    <h3>Raises:</h3>
-    Errors similar to those of Lua compiler.
-
-    <h3>see also:</h3>
-    <ul>
-         <a href="index.html#eval">eval</a>
-    </ul>
-
-
-</dd>
-    <dt>
-    <a name = "eval_table"></a>
-    <strong>eval_table&nbsp;(str [, grammar [, filename]])</strong>
-    </dt>
-    <dd>
-    Only evaluates literal tables.
 
     <h3>Parameters:</h3>
     <ul>
@@ -302,10 +158,48 @@
     <h3>Raises:</h3>
     Errors similar to those of Lua compiler.
 
-    <h3>see also:</h3>
-    <ul>
-         <a href="index.html#eval">eval</a>
-    </ul>
+
+
+</dd>
+</dl>
+    <h2><a name="Fields"></a>Fields</h2>
+    <dl class="function">
+    <dt>
+    <a name = "grammar"></a>
+    <strong>grammar</strong>
+    </dt>
+    <dd>
+    Default grammar to be used by evaluation functions.  Set to the version of Lua used to run the module.
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "max_nesting"></a>
+    <strong>max_nesting</strong>
+    </dt>
+    <dd>
+    Maximum nesting level of table literals.  Default is 200.
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "max_repr_length"></a>
+    <strong>max_repr_length</strong>
+    </dt>
+    <dd>
+    Maximum length of string representation in error messages.  Default is 45.
+
+
+
+
 
 
 </dd>

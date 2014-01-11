@@ -313,21 +313,11 @@ function literal.Cursor:eval_number()
       self:step(2)
       if self.grammar == "5.1" then
          -- Should be an integer
-         local integer_str, next_i = self:match "(%x+)()"
-
-         if not integer_str then
-            self:error("malformed number")
-         end
-
+         local integer_str = self:assert(self:match "(%x+)", "malformed number")
          res = self:assert(tonumber(integer_str, 16), "malformed number")
-         self:jump(next_i)
+         self:step(integer_str:len())
       else
-         local integer_str, next_i = self:match "(%x*)()"
-
-         if not integer_str then
-            self:error("malformed number")
-         end
-
+         local integer_str = self:assert(self:match "(%x*)", "malformed number")
          local integer
 
          if integer_str == "" then
@@ -336,18 +326,12 @@ function literal.Cursor:eval_number()
             integer = self:assert(tonumber(integer_str, 16), "malformed number")
          end
 
-         self:jump(next_i)
+         self:step(integer_str:len())
          local fract = 0
 
          if self.char == "." then
             self:step()
-            local fract_str, next_i = self:match "(%x*)()"
-
-            if not fract_str then
-               self:error("malformed number")
-            end
-
-            self:jump(next_i)
+            local fract_str = self:assert(self:match "(%x*)", "malformed number")
 
             if fract_str == "" then
                self:assert(integer_str ~= "", "malformed number")
@@ -356,35 +340,26 @@ function literal.Cursor:eval_number()
                fract = self:assert(tonumber(fract_str, 16), "malformed number")
                fract = fract / 16^fract_str:len()
             end
+
+            self:step(fract_str:len())
          end
 
          if self:match "[pP]" then
             self:step()
-
             local pow_mul = self:eval_sign()
-            local pow_str, next_i = self:match "(%d+)()"
-
-            if not pow_str then
-               self:error("malformed number")
-            end
-
-            self:jump(next_i)
+            local pow_str = self:assert(self:match "(%d+)", "malformed number")
             local pow = self:assert(tonumber(pow_str), "malformed number")*pow_mul
             mul = mul * 2^pow
+            self:step(pow_str:len())
          end
 
          res = integer+fract
       end
    else
       -- Decimal
-      local number, next_i = self:match "([%+%-%.%deE]+)()"
-
-      if not number then
-         self:error("malformed number")
-      end
-
-      res = self:assert(tonumber(number), "malformed number")
-      self:jump(next_i)
+      local number_str = self:assert(self:match "([%+%-%.%deE]+)", "malformed number")
+      res = self:assert(tonumber(number_str), "malformed number")
+      self:step(number_str:len())
    end
 
    return res*mul

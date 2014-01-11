@@ -513,7 +513,7 @@ function literal.eval_config(str, grammar, filename)
       cur:assert(cur.char == "=", "'=' expected")
       cur:step()
       cur:skip_space_and_comments()
-      v = cur:eval()
+      v = cur:eval(1)
       cur:skip_space_and_comments()
 
       if cur.char == ";" then

@@ -95,4 +95,9 @@ true--[[this works in Lua]],[0xFFA]=[=[baz]=]--
       local t = literal.eval_table(s)
       assert.same({true, foo = "bar", [4090] = "baz"}, t)
    end)
+
+   it("doesn't evaluate deep tables", function()
+      assert.errors(function() literal.eval_table(('{'):rep(201) .. ('}'):rep(201)) end,
+         [=[[string "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{..."]:1: table is too deep near '{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}']=])
+   end)
 end)

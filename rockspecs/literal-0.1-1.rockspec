@@ -1,7 +1,8 @@
 package = "literal"
-version = "git-1"
+version = "0.1-1"
 source = {
-   url = "git://github.com/mpeterv/literal.git"
+   url = "git://github.com/mpeterv/literal.git",
+   tag = "0.1"
 }
 description = {
    summary = "a library for safe evaluation of Lua literal expressions",

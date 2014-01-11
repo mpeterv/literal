@@ -30,6 +30,7 @@
 <h2>Contents</h2>
 <ul>
 <li><a href="#Functions">Functions</a></li>
+<li><a href="#Fields">Fields</a></li>
 </ul>
 
 
@@ -78,6 +79,21 @@
 	<tr>
 	<td class="name" nowrap><a href="#eval_table">eval_table&nbsp;(str [, grammar [, filename]])</a></td>
 	<td class="summary">Only evaluates literal tables.</td>
+	</tr>
+</table>
+<h2><a href="#Fields">Fields</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#grammar">grammar</a></td>
+	<td class="summary">Default grammar to be used by evaluation functions.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#max_nesting">max_nesting</a></td>
+	<td class="summary">Maximum nesting level of table literals.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#max_repr_length">max_repr_length</a></td>
+	<td class="summary">Maximum length of string representation in error messages.</td>
 	</tr>
 </table>
 
@@ -138,7 +154,7 @@
          the string.</li>
         <li><span class="parameter">grammar</span>
             <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
-         the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module.</li>
+         the grammar to be used. Default is @see grammar</li>
         <li><span class="parameter">filename</span>
             <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
          the filename to be used in error messages.</li>
@@ -306,6 +322,48 @@
     <ul>
          <a href="index.html#eval">eval</a>
     </ul>
+
+
+</dd>
+</dl>
+    <h2><a name="Fields"></a>Fields</h2>
+    <dl class="function">
+    <dt>
+    <a name = "grammar"></a>
+    <strong>grammar</strong>
+    </dt>
+    <dd>
+    Default grammar to be used by evaluation functions.  Set to the version of Lua used to run the module.
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "max_nesting"></a>
+    <strong>max_nesting</strong>
+    </dt>
+    <dd>
+    Maximum nesting level of table literals.  Default is 200.
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "max_repr_length"></a>
+    <strong>max_repr_length</strong>
+    </dt>
+    <dd>
+    Maximum length of string representation in error messages.  Default is 45.
+
+
+
+
 
 
 </dd>

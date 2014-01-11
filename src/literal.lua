@@ -6,14 +6,14 @@ local literal = {}
 
 local class = require "30log"
 
+--- Default grammar to be used by evaluation functions. Set to the version of Lua used to run the module. 
+literal.grammar = _VERSION:find "5.2" and "5.2" or "5.1"
 
---- Default grammar is the Lua version used to run literal. 
--- @field grammar
-if _VERSION:find "5.2" then
-   literal.grammar = "5.2"
-else
-   literal.grammar = "5.1"
-end
+--- Maximum nesting level of table literals. Default is 200. 
+literal.max_nesting = 200
+
+--- Maximum length of string representation in error messages. Default is 45. 
+literal.max_repr_length = 45
 
 local buffer = class()
 
@@ -32,7 +32,6 @@ function buffer:res()
 end
 
 literal.Cursor = class()
-literal.Cursor.max_repr_length = 45
 
 function literal.Cursor:__init(str, grammar, filename)
    self.str = str
@@ -47,8 +46,8 @@ function literal.Cursor:__init(str, grammar, filename)
    else
       self.repr = self:match('([ %p%d%a]*)')
 
-      if self.repr:len() > self.max_repr_length or self.repr:len() ~= str:len() then
-         self.repr = self.repr:sub(1, self.max_repr_length) .. "..."
+      if self.repr:len() > literal.max_repr_length or self.repr:len() ~= str:len() then
+         self.repr = self.repr:sub(1, literal.max_repr_length) .. "..."
       end
 
       self.repr = ("[string \"%s\"]"):format(self.repr)
@@ -421,7 +420,9 @@ local literals = {
    ["false"] = {false}
 }
 
-function literal.Cursor:eval_table()
+function literal.Cursor:eval_table(nesting)
+   nesting = (nesting or 0)+1
+   self:assert(nesting <= literal.max_nesting, "table is too deep")
    self:assert(self.char == '{', "table literal expected")
    local t = {}
    local n = 0
@@ -441,7 +442,7 @@ function literal.Cursor:eval_table()
          if not self:match '%[=*%[' then
             self:step()
             self:skip_space_and_comments()
-            k = self:eval()
+            k = self:eval(nesting)
             self:assert(k ~= nil, "table index is nil")
             self:skip_space_and_comments()
             self:assert(self.char == ']', "']' expected")
@@ -466,10 +467,10 @@ function literal.Cursor:eval_table()
          self:assert(self.char == '=', "'=' expected")
          self:step()
          self:skip_space_and_comments()
-         v = self:eval()
+         v = self:eval(nesting)
          t[k] = v
       else
-         v = self:eval()
+         v = self:eval(nesting)
          n = n+1
          t[n] = v
       end
@@ -489,7 +490,7 @@ function literal.Cursor:eval_table()
    end
 end
 
-function literal.Cursor:eval()
+function literal.Cursor:eval(nesting)
    for lit, val in pairs(literals) do
       if self:match(lit) then
          self:step(lit:len())
@@ -504,7 +505,7 @@ function literal.Cursor:eval()
    elseif self:match '[%.%+%-%d]' then
       return self:eval_number()
    elseif self.char == '{' then
-      return self:eval_table()
+      return self:eval_table(nesting)
    else
       self:error("literal expected")
    end
@@ -533,7 +534,7 @@ end
 
 ---Only evaluates short literal strings. 
 -- @string str the string. 
--- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
+-- @string[opt] grammar the grammar to be used. Default is @see grammar
 -- @string[opt] filename the filename to be used in error messages. 
 -- @raise Errors similar to those of Lua compiler. 
 -- @return[type=string] Result of evaluation. 

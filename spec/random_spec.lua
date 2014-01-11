@@ -51,7 +51,7 @@ describe("randomized test", function()
 
       for i=1, 100 do
          local x = random_var(false, 0)
-         local s = serpent.block(x, {sortkeys=false})
+         local s = serpent.block(x)
          local x2 = literal.eval(s)
          assert.same(x, x2)
       end

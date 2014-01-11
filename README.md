@@ -2,8 +2,6 @@
 
 [![Build Status](https://travis-ci.org/mpeterv/literal.png?branch=master)](https://travis-ci.org/mpeterv/literal)
 
-Not everything stated here is implemented. 
-
 ## Introduction
 
 __literal__ is a library for safe evaluation of Lua literal expressions, written in pure Lua. It can evaluate literals like `nil`, `true`, `false`, decimal and hexadecimal numerical constants, short and long strings, and tables of other literals. It can use grammar of Lua 5.1 or Lua 5.2, and provides error messages similar to those of Lua compiler. 

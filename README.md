@@ -30,7 +30,7 @@ require "literal"
 
 ### Evaluating
 
-Evaluate strings using `literal.eval` function. Pass a string as first argument. 
+Evaluate strings using `literal.eval` function. Pass a string as the first argument. 
 
 ```lua
 local s = [[
@@ -49,7 +49,7 @@ print(t[1]) -- true
 print(t[4090]) -- baz
 ```
 
-`literal.eval` raises an error if the string is not valid literal. 
+`literal.eval` raises an error if the string is not a valid literal. 
 
 ```lua
 local s = [[
@@ -70,12 +70,31 @@ literal.eval(s, "5.1")
 -- Error: [string "0x1p1"]:1: <eof> expected near 'p1'
 ```
 
-The second optional argument sets the filename to be used in error reporting. 
+The second optional argument sets the filename to be used in error messages. 
 
 ```lua
 local s = "0x1p1"
 literal.eval(s, "5.1", "test.lua")
 -- Error: test.lua:1: <eof> expected near 'p1'
+```
+
+### Evaluating configuration files
+
+It is common to use Lua scripts as configuration files. Usually such files consist of several assignments in form `name` = `expression`. In this case, it is possible to load configuration using `literal.eval_config`. 
+
+```lua
+local s = [[
+foo = "bar"
+names = {"Alice", "Bob"}
+
+-- comments are allowed
+enable_magic = true
+]]
+
+local config = literal.eval_config(s)
+print(config.foo) -- bar
+print(config.names[1] .. ", " .. config.names[2]) -- Alice, Bob
+print(config.enable_magic and "Magic" or "No magic :(") -- Magic
 ```
 
 For more information, see [documentation](#documentation). 
@@ -108,7 +127,7 @@ Download `/src/literal.lua` file and put it into the directory for libraries or 
 
 ## Testing
 
-__literal__ comes with a testing suit located in `spec` directory. The requirements for testing are [busted](http://olivinelabs.com/busted/) and [serpent](https://github.com/pkulchenko/serpent), both can be installed using __luarocks__. The command for running tests is
+__literal__ comes with a testing suite located in `spec` directory. The requirements for testing are [busted](http://olivinelabs.com/busted/) and [serpent](https://github.com/pkulchenko/serpent), both can be installed using __luarocks__. The command for running tests is
 
 ```bash
 busted path/to/spec/directory

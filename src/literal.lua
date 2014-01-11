@@ -44,17 +44,17 @@ function literal.Cursor:__init(str, grammar, filename)
    if filename then
       self.repr = filename
    else
-      self.repr = self:match('([ %p%d%a]*)')
+      self.repr = self:match "([ %p%d%a]*)"
 
       if self.repr:len() > literal.max_repr_length or self.repr:len() ~= str:len() then
          self.repr = self.repr:sub(1, literal.max_repr_length) .. "..."
       end
 
-      self.repr = ("[string \"%s\"]"):format(self.repr)
+      self.repr = ('[string "%s"]'):format(self.repr)
    end
 
    -- Is current char the first half of two-chars newline?
-   if self:match '\r\n' or self:match '\n\r' then
+   if self:match "\r\n" or self:match "\n\r" then
       self.bound = true
    else
       self.bound = false
@@ -66,11 +66,11 @@ function literal.Cursor:errormsg(msg, chunk)
 
    if not chunk then
       self:skip_space_and_comments()
-      chunk = self:match("([^%s%c]+)")
+      chunk = self:match "([^%s%c]+)"
 
       if chunk then
          chunk = "'" .. chunk .. "'"
-      elseif self:match '%c' then
+      elseif self:match "%c" then
          chunk = "char(" .. self.char:byte() .. ")"
       else
          chunk = "<eof>"
@@ -89,7 +89,7 @@ function literal.Cursor:assert(assertion, msg, chunk)
 end
 
 function literal.Cursor:invalid_escape()
-   self:error("invalid escape sequence", "'\\" .. self:match '(%C?)' .. "'")
+   self:error("invalid escape sequence", "'\\" .. self:match "(%C?)" .. "'")
 end
 
 -- Can only jump forward
@@ -98,13 +98,13 @@ function literal.Cursor:jump(i)
    local cur_newline, new_i, old_i
 
    while self.i < i do
-      new_i = self:find '[\r\n]'
+      new_i = self:find "[\r\n]"
 
       if not new_i or new_i > i then
          new_i = i
       end
 
-      if self:match '[\r\n]' then
+      if self:match "[\r\n]" then
          if not self.bound then
             self.line = self.line+1
          end
@@ -112,7 +112,7 @@ function literal.Cursor:jump(i)
 
       old_i, self.i = self.i, new_i
 
-      if self:match '\r\n' or self:match '\n\r' then
+      if self:match "\r\n" or self:match "\n\r" then
          if self.i-old_i == 1 and self.bound then
             self.bound = false
          else
@@ -137,7 +137,7 @@ function literal.Cursor:find(pattern, plain)
 end
 
 function literal.Cursor:match(pattern)
-   return self.str:match('^' .. pattern, self.i)
+   return self.str:match("^" .. pattern, self.i)
 end
 
 function literal.Cursor:skip_newline()
@@ -145,23 +145,23 @@ function literal.Cursor:skip_newline()
 end
 
 function literal.Cursor:skip_space()
-   return self:jump(self:match '%s*()')
+   return self:jump(self:match "%s*()")
 end
 
 function literal.Cursor:skip_space_and_comments()
    while true do
       self:skip_space()
 
-      if self:match '%-%-' then
+      if self:match "%-%-" then
          -- Comment
          self:step(2)
 
-         if self:match '%[=*%[' then
+         if self:match "%[=*%[" then
             -- Long comment
             self:eval_long_string()
          else
             -- Short comment
-            self:jump(self:match '[^\r\n]*()')
+            self:jump(self:match "[^\r\n]*()")
          end
       else
          return self
@@ -177,16 +177,16 @@ end
 
 function literal.Cursor:eval_long_string()
    local errmsg = self:errormsg("unfinished long string")
-   local second_opening_bracket = self:assert(self:match '%[=*()%[', "long string expected")
+   local second_opening_bracket = self:assert(self:match "%[=*()%[", "long string expected")
 
    local level = second_opening_bracket-self.i-1
    self:jump(second_opening_bracket+1)
 
-   if self:match '[\r\n]' then
+   if self:match "[\r\n]" then
       self:skip_newline()
    end
 
-   local patt = '(.-)]' .. ('='):rep(level) .. ']()'
+   local patt = "(.-)]" .. ("="):rep(level) .. "]()"
    local str, next_i = self:match(patt)
 
    if not str then
@@ -198,20 +198,20 @@ function literal.Cursor:eval_long_string()
 end
 
 local escapes = {
-   a = '\a',
-   b = '\b',
-   f = '\f',
-   n = '\n',
-   r = '\r',
-   t = '\t',
-   v = '\v',
-   ['\\'] = '\\',
-   ['\''] = '\'',
-   ['\"'] = '"'
+   a = "\a",
+   b = "\b",
+   f = "\f",
+   n = "\n",
+   r = "\r",
+   t = "\t",
+   v = "\v",
+   ["\\"] = "\\",
+   ["'"] = "'",
+   ['"'] = '"'
 }
 
 function literal.Cursor:eval_short_string()
-   self:assert(self:match '[\'"]', "short string expected")
+   self:assert(self:match "['\"]", "short string expected")
    local quote = self.char
    local errmsg = self:errormsg("unfinished string")
    local buf = buffer()
@@ -219,17 +219,17 @@ function literal.Cursor:eval_short_string()
    local chunk_start = self.i
 
    while self.char ~= quote do
-      if not self:match '[^\r\n]' then
+      if not self:match "[^\r\n]" then
          error(errmsg)
       end
 
-      if self.char == '\\' then
+      if self.char == "\\" then
          -- Escape sequence
          -- Cut chunk
          buf:add(self.str:sub(chunk_start, self.i-1))
          self:step()
 
-         if self.char == '' then
+         if self.char == "" then
             error(errmsg)
          end
 
@@ -237,17 +237,17 @@ function literal.Cursor:eval_short_string()
             -- Regular escape
             buf:add(escapes[self.char])
             self:step()
-         elseif self:match '[\r\n]' then
+         elseif self:match "[\r\n]" then
             -- Must replace with \n
-            buf:add('\n')
+            buf:add("\n")
             self:skip_newline()
-         elseif self:match '%d' then
+         elseif self:match "%d" then
             -- Decimal escape
             local start_i = self.i
             self:step()
 
             for j=2, 3 do
-               if self:match '%d' then
+               if self:match "%d" then
                   self:step()
                end
             end
@@ -260,15 +260,15 @@ function literal.Cursor:eval_short_string()
          elseif self.grammar == "5.2" then
             -- Lua 5.2 things
 
-            if self.char == 'z' then
+            if self.char == "z" then
                self:step() -- Skip z
                self:skip_space()
-            elseif self.char == 'x' then
+            elseif self.char == "x" then
                -- Hexadecimal escape
                self:step() -- Skip x
                local code_str = self.str:sub(self.i, self.i+1)
-               self:assert(code_str:match '(%x%x)',
-                  "hexadecimal digit expected", "'\\x" .. code_str:match '([^%s%c]*)' .. "'")
+               self:assert(code_str:match "(%x%x)",
+                  "hexadecimal digit expected", "'\\x" .. code_str:match "([^%s%c]*)" .. "'")
                self:step(2)
                local code = tonumber(code_str, 16)
                buf:add(string.char(code))
@@ -293,10 +293,10 @@ function literal.Cursor:eval_short_string()
 end
 
 function literal.Cursor:eval_sign()
-   if self.char == '-' then
+   if self.char == "-" then
       self:step()
       return -1
-   elseif self.char == '+' then
+   elseif self.char == "+" then
       self:step()
    end
 
@@ -304,16 +304,16 @@ function literal.Cursor:eval_sign()
 end
 
 function literal.Cursor:eval_number()
-   self:assert(self:match '[%+%-%.%x]', "numerical constant expected")
+   self:assert(self:match "[%+%-%.%x]", "numerical constant expected")
    local mul = self:eval_sign()
    local res
 
-   if self:match '0[xX]' then
+   if self:match "0[xX]" then
       -- Hexadecimal
       self:step(2)
       if self.grammar == "5.1" then
          -- Should be an integer
-         local integer_str, next_i = self:match '(%x+)()'
+         local integer_str, next_i = self:match "(%x+)()"
 
          if not integer_str then
             self:error("malformed number")
@@ -322,7 +322,7 @@ function literal.Cursor:eval_number()
          res = self:assert(tonumber(integer_str, 16), "malformed number")
          self:jump(next_i)
       else
-         local integer_str, next_i = self:match '(%x*)()'
+         local integer_str, next_i = self:match "(%x*)()"
 
          if not integer_str then
             self:error("malformed number")
@@ -330,7 +330,7 @@ function literal.Cursor:eval_number()
 
          local integer
 
-         if integer_str == '' then
+         if integer_str == "" then
             integer = 0
          else
             integer = self:assert(tonumber(integer_str, 16), "malformed number")
@@ -339,9 +339,9 @@ function literal.Cursor:eval_number()
          self:jump(next_i)
          local fract = 0
 
-         if self.char == '.' then
+         if self.char == "." then
             self:step()
-            local fract_str, next_i = self:match '(%x*)()'
+            local fract_str, next_i = self:match "(%x*)()"
 
             if not fract_str then
                self:error("malformed number")
@@ -349,8 +349,8 @@ function literal.Cursor:eval_number()
 
             self:jump(next_i)
 
-            if fract_str == '' then
-               self:assert(integer_str ~= '', "malformed number")
+            if fract_str == "" then
+               self:assert(integer_str ~= "", "malformed number")
                fract = 0
             else
                fract = self:assert(tonumber(fract_str, 16), "malformed number")
@@ -358,11 +358,11 @@ function literal.Cursor:eval_number()
             end
          end
 
-         if self:match '[pP]' then
+         if self:match "[pP]" then
             self:step()
 
             local pow_mul = self:eval_sign()
-            local pow_str, next_i = self:match '(%d+)()'
+            local pow_str, next_i = self:match "(%d+)()"
 
             if not pow_str then
                self:error("malformed number")
@@ -377,7 +377,7 @@ function literal.Cursor:eval_number()
       end
    else
       -- Decimal
-      local number, next_i = self:match '([%+%-%.%deE]+)()'
+      local number, next_i = self:match "([%+%-%.%deE]+)()"
 
       if not number then
          self:error("malformed number")
@@ -423,7 +423,7 @@ local literals = {
 function literal.Cursor:eval_table(nesting)
    nesting = (nesting or 0)+1
    self:assert(nesting <= literal.max_nesting, "table is too deep")
-   self:assert(self.char == '{', "table literal expected")
+   self:assert(self.char == "{", "table literal expected")
    local t = {}
    local n = 0
    local k, v
@@ -435,22 +435,22 @@ function literal.Cursor:eval_table(nesting)
       self:skip_space_and_comments()
       key_value = false
 
-      if self.char == '}' then
+      if self.char == "}" then
          self:step()
          return t
-      elseif self.char == '[' then
-         if not self:match '%[=*%[' then
+      elseif self.char == "[" then
+         if not self:match "%[=*%[" then
             self:step()
             self:skip_space_and_comments()
             k = self:eval(nesting)
             self:assert(k ~= nil, "table index is nil")
             self:skip_space_and_comments()
-            self:assert(self.char == ']', "']' expected")
+            self:assert(self.char == "]", "']' expected")
             self:step()
             key_value = true
          end
-      elseif self:match '[_%a][_%a%d]*' then
-         k = self:match '([_%a][_%a%d]*)'
+      elseif self:match "[_%a][_%a%d]*" then
+         k = self:match "([_%a][_%a%d]*)"
 
          if not literals[k] then
             if keywords[k] or self.grammar == "5.2" and k == "goto" then
@@ -464,7 +464,7 @@ function literal.Cursor:eval_table(nesting)
 
       if key_value then
          self:skip_space_and_comments()
-         self:assert(self.char == '=', "'=' expected")
+         self:assert(self.char == "=", "'=' expected")
          self:step()
          self:skip_space_and_comments()
          v = self:eval(nesting)
@@ -477,7 +477,7 @@ function literal.Cursor:eval_table(nesting)
 
       self:skip_space_and_comments()
 
-      if self:match '[,;]' then
+      if self:match "[,;]" then
          self:step()
       else
          local msg = "'}' expected"
@@ -486,7 +486,7 @@ function literal.Cursor:eval_table(nesting)
             msg = msg .. " (to close '{' at line " .. start_line .. ")"
          end
 
-         self:assert(self.char == '}', msg)
+         self:assert(self.char == "}", msg)
       end
    end
 end
@@ -499,13 +499,13 @@ function literal.Cursor:eval(nesting)
       end
    end
 
-   if self:match '[\'"]' then
+   if self:match "['\"]" then
       return self:eval_short_string()
-   elseif self:match '%[=*%[' then
+   elseif self:match "%[=*%[" then
       return self:eval_long_string()
-   elseif self:match '[%.%+%-%d]' then
+   elseif self:match "[%.%+%-%d]" then
       return self:eval_number()
-   elseif self.char == '{' then
+   elseif self.char == "{" then
       return self:eval_table(nesting)
    else
       self:error("literal expected")
@@ -545,18 +545,19 @@ function literal.eval_config(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
    local t = {}
    local k, v
+
    while cur.i < cur.len do
       cur:skip_space_and_comments()
-      k = cur:assert(cur:match '([_%a][_%a%d]*)', "unexpected symbol")
+      k = cur:assert(cur:match "([_%a][_%a%d]*)", "unexpected symbol")
       cur:step(k:len())
       cur:skip_space_and_comments()
-      cur:assert(cur.char == '=', "'=' expected")
+      cur:assert(cur.char == "=", "'=' expected")
       cur:step()
       cur:skip_space_and_comments()
       v = cur:eval()
       cur:skip_space_and_comments()
 
-      if cur.char == ';' then
+      if cur.char == ";" then
          cur:step()
       end
 

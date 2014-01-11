@@ -27,13 +27,13 @@ LUAROCKS_BUILD_COMMAND="./configure && make && sudo make install"
 # Install Lua
 curl $LUA_URL | tar xz
 cd $LUA_DIR
-$LUA_BUILD_COMMAND
+eval $LUA_BUILD_COMMAND
 cd ..
 
 # Install Luarocks
 curl $LUAROCKS_URL | tar xz
 cd $LUAROCKS_DIR
-$LUAROCKS_BUILD_COMMAND
+eval $LUAROCKS_BUILD_COMMAND
 cd ..
 
 # Done!

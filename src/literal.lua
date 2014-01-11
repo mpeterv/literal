@@ -476,6 +476,7 @@ function literal.Cursor:eval_table(nesting)
       end
 
       self:skip_space_and_comments()
+
       if self:match '[,;]' then
          self:step()
       else
@@ -511,14 +512,12 @@ function literal.Cursor:eval(nesting)
    end
 end
 
-
---- Main evaluation function. 
---
--- Tries to evaluate a given string as a Lua literal. 
+--- Tries to evaluate a given string as a Lua literal. 
 -- Correct literals are "nil", "true", "false", decimal and hexadecimal numerical constants, short and long strings, and tables of other literals. 
 --
 -- Comments are considered whitespace. 
 -- Non-whitespace after a correct literal is an error. 
+--
 -- @string str the string. 
 -- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
 -- @string[opt] filename the filename to be used in error messages. 
@@ -532,88 +531,39 @@ function literal.eval(str, grammar, filename)
    return res
 end
 
----Only evaluates short literal strings. 
--- @string str the string. 
--- @string[opt] grammar the grammar to be used. Default is @see grammar
--- @string[opt] filename the filename to be used in error messages. 
--- @raise Errors similar to those of Lua compiler. 
--- @return[type=string] Result of evaluation. 
--- @see eval
-function literal.eval_short_string(str, grammar, filename)
-   local cur = literal.Cursor(str, grammar, filename)
-   cur:skip_space_and_comments()
-   local res = cur:eval_short_string()
-   cur:finish()
-   return res
-end
-
---- Only evaluates long literal strings. 
--- @string str the string. 
--- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
--- @string[opt] filename the filename to be used in error messages. 
--- @raise Errors similar to those of Lua compiler. 
--- @return[type=string] Result of evaluation. 
--- @see eval
-function literal.eval_long_string(str, grammar, filename)
-   local cur = literal.Cursor(str, grammar, filename)
-   cur:skip_space_and_comments()
-   local res = cur:eval_long_string()
-   cur:finish()
-   return res
-end
-
---- Only evaluates literal strings. 
--- @string str the string. 
--- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
--- @string[opt] filename the filename to be used in error messages. 
--- @raise Errors similar to those of Lua compiler. 
--- @return[type=string] Result of evaluation. 
--- @see eval
-function literal.eval_string(str, grammar, filename)
-   local cur = literal.Cursor(str, grammar, filename)
-   cur:skip_space_and_comments()
-   local res
-
-   if cur:match '[\'"]' then
-      res = cur:eval_short_string()
-   elseif cur:match '%[=*%[' then
-      res = cur:eval_long_string()
-   else 
-      self:error("string expected")
-   end
-
-   cur:finish()
-   return res
-end
-
---- Only evaluates numerical constants. 
--- @string str the string. 
--- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
--- @string[opt] filename the filename to be used in error messages. 
--- @raise Errors similar to those of Lua compiler. 
--- @return[type=number] Result of evaluation. 
--- @see eval
-function literal.eval_number(str, grammar, filename)
-   local cur = literal.Cursor(str, grammar, filename)
-   cur:skip_space_and_comments()
-   local res = cur:eval_number()
-   cur:finish()
-   return res
-end
-
---- Only evaluates literal tables. 
+--- Tries to evaluate a given string as a config file. 
+-- Config is a string consisting of pairs "<string> = <literal>", separated by whitespace and optional semicolons. 
+-- <string> must be a valid Lua name or keyword. 
+-- Config is interpreted as a table with these strings as keys and corresponding literals as values. 
+--
 -- @string str the string. 
 -- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
 -- @string[opt] filename the filename to be used in error messages. 
 -- @raise Errors similar to those of Lua compiler. 
 -- @return[type=table] Result of evaluation. 
--- @see eval
-function literal.eval_table(str, grammar, filename)
+function literal.eval_config(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
-   cur:skip_space_and_comments()
-   local res = cur:eval_table()
-   cur:finish()
-   return res
+   local t = {}
+   local k, v
+   while cur.i < cur.len do
+      cur:skip_space_and_comments()
+      k = cur:assert(cur:match '([_%a][_%a%d]*)', "unexpected symbol")
+      cur:step(k:len())
+      cur:skip_space_and_comments()
+      cur:assert(cur.char == '=', "'=' expected")
+      cur:step()
+      cur:skip_space_and_comments()
+      v = cur:eval()
+      cur:skip_space_and_comments()
+
+      if cur.char == ';' then
+         cur:step()
+      end
+
+      t[k] = v
+   end
+
+   return t
 end
 
 return literal

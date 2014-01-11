@@ -1,7 +1,7 @@
 --- A library for safe evaluation of Lua literal expressions. 
 -- @module literal
--- @author Peter Melnichenko
 -- @license Public Domain
+-- @author Peter Melnichenko
 local literal = {}
 
 local class = require "30log"
@@ -507,8 +507,8 @@ function literal.eval(str, grammar, filename)
 end
 
 --- Tries to evaluate a given string as a config file. 
--- Config is a string consisting of pairs "<string> = <literal>", separated by whitespace and optional semicolons. 
--- <string> must be a valid Lua name or keyword. 
+-- Config is a string consisting of pairs "&lt;string&gt; = &lt;literal&gt;", separated by whitespace and optional semicolons. 
+-- &lt;string&gt; must be a valid Lua name or keyword. 
 -- Config is interpreted as a table with these strings as keys and corresponding literals as values. 
 --
 -- @string str the string. 

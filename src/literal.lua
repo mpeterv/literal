@@ -525,7 +525,7 @@ function literal.eval(str, grammar, filename)
    return literal.Cursor(str, grammar, filename):eval()
 end
 
---- Protected version of @{eval}
+--- Protected version of @{eval}. 
 -- Acts as @{eval}, but instead of raising errors returns false and error message. 
 --
 -- @string str the string. 
@@ -558,7 +558,7 @@ function literal.eval_config(str, grammar, filename)
    return literal.Cursor(str, grammar, filename):eval_config()
 end
 
---- Protected version of @{eval_config}
+--- Protected version of @{eval_config}. 
 -- Acts as @{eval_config}, but instead of raising errors returns false and error message. 
 --
 -- @string str the string. 

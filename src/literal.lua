@@ -522,6 +522,7 @@ end
 -- @raise Errors similar to those of Lua compiler. 
 -- @return[type=nil|boolean|number|string|table] Result of evaluation. 
 function literal.eval(str, grammar, filename)
+   assert(type(str) == "string", ("bad argument #1 to 'eval' (string expected, got %s)"):format(type(str)))
    return literal.Cursor(str, grammar, filename):eval()
 end
 
@@ -534,6 +535,7 @@ end
 -- @return[type=boolean] True if there were no errors, false otherwise. 
 -- @return[type=nil|boolean|number|string|table] Result of evaluation or error message. 
 function literal.peval(str, grammar, filename)
+   assert(type(str) == "string", ("bad argument #1 to 'peval' (string expected, got %s)"):format(type(str)))
    local cur = literal.Cursor(str, grammar, filename)
    local ok, result = pcall(cur.eval, cur)
 
@@ -555,6 +557,7 @@ end
 -- @raise Errors similar to those of Lua compiler. 
 -- @return[type=table] Result of evaluation. 
 function literal.eval_config(str, grammar, filename)
+   assert(type(str) == "string", ("bad argument #1 to 'eval_config' (string expected, got %s)"):format(type(str)))
    return literal.Cursor(str, grammar, filename):eval_config()
 end
 
@@ -567,6 +570,7 @@ end
 -- @return[type=boolean] True if there were no errors, false otherwise. 
 -- @return[type=string|table] Result of evaluation or error message. 
 function literal.peval_config(str, grammar, filename)
+   assert(type(str) == "string", ("bad argument #1 to 'peval_config' (string expected, got %s)"):format(type(str)))
    local cur = literal.Cursor(str, grammar, filename)
    local ok, result = pcall(cur.eval_config, cur)
 

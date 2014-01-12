@@ -57,8 +57,8 @@ local s = [[
    foo = "bar"
 ]]
 
-local t = literal.load(s)
--- Error: [string "{..."]:3: '}' expected (to close '{' at line 1) near <eof>
+local t = literal.eval(s)
+-- Raises: [string "{..."]:3: '}' expected (to close '{' at line 1) near <eof>
 ```
 
 `literal.eval` takes two optional arguments. The first one should be a string `5.1` or `5.2` and specifies which grammar will be used. By default, it is the grammar of the Lua version used to run __literal__. 
@@ -67,7 +67,7 @@ local t = literal.load(s)
 local s = "0x1p1"
 print(literal.eval(s, "5.2")) -- 2
 literal.eval(s, "5.1")
--- Error: [string "0x1p1"]:1: <eof> expected near 'p1'
+-- Raises: [string "0x1p1"]:1: <eof> expected near 'p1'
 ```
 
 The second optional argument sets the filename to be used in error messages. 
@@ -75,7 +75,7 @@ The second optional argument sets the filename to be used in error messages.
 ```lua
 local s = "0x1p1"
 literal.eval(s, "5.1", "test.lua")
--- Error: test.lua:1: <eof> expected near 'p1'
+-- Raises: test.lua:1: <eof> expected near 'p1'
 ```
 
 ### Evaluating configuration files
@@ -97,7 +97,13 @@ print(config.names[1] .. ", " .. config.names[2]) -- Alice, Bob
 print(config.enable_magic and "Magic" or "No magic :(") -- Magic
 ```
 
-For more information, see [documentation](#documentation). 
+### Getting error message
+
+`literal.eval` and `literal.eval_config` raise an error if the passed string is not valid. The error message can be extracted using `pcall`, but it will be automatically prepended with information about where the error was raised. 
+
+To avoid this, use `literal.peval` and `literal.peval_config`, which return a boolean flag indicating success of evaluation and the result or error message. 
+
+For more information, see [documentation](https://mpeterv.github.io/literal). 
 
 ## Documentation
 

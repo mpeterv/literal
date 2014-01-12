@@ -61,7 +61,8 @@ function literal.Cursor:errormsg(msg, chunk)
       end
    end
 
-   return ("%s:%d: %s near %s"):format(self.repr, line, msg, chunk)
+   self.errmsg = ("%s:%d: %s near %s"):format(self.repr, line, msg, chunk)
+   return self.errmsg
 end
 
 function literal.Cursor:error(msg, chunk)
@@ -407,7 +408,7 @@ function literal.Cursor:eval_table(nesting)
          if not self:match "%[=*%[" then
             self:step()
             self:skip_space_and_comments()
-            k = self:eval(nesting)
+            k = self:eval_literal(nesting)
             self:assert(k ~= nil, "table index is nil")
             self:skip_space_and_comments()
             self:assert(self.char == "]", "']' expected")
@@ -432,10 +433,10 @@ function literal.Cursor:eval_table(nesting)
          self:assert(self.char == "=", "'=' expected")
          self:step()
          self:skip_space_and_comments()
-         v = self:eval(nesting)
+         v = self:eval_literal(nesting)
          t[k] = v
       else
-         v = self:eval(nesting)
+         v = self:eval_literal(nesting)
          n = n+1
          t[n] = v
       end
@@ -456,7 +457,7 @@ function literal.Cursor:eval_table(nesting)
    end
 end
 
-function literal.Cursor:eval(nesting)
+function literal.Cursor:eval_literal(nesting)
    for lit, val in pairs(literals) do
       if self:match(lit) then
          self:step(lit:len())
@@ -477,6 +478,38 @@ function literal.Cursor:eval(nesting)
    end
 end
 
+function literal.Cursor:eval()
+   self:skip_space_and_comments()
+   local res = self:eval_literal()
+   self:finish()
+   return res
+end
+
+function literal.Cursor:eval_config()
+   local t = {}
+   local k, v
+
+   while self.i < self.len do
+      self:skip_space_and_comments()
+      k = self:assert(self:match "([_%a][_%a%d]*)", "unexpected symbol")
+      self:step(k:len())
+      self:skip_space_and_comments()
+      self:assert(self.char == "=", "'=' expected")
+      self:step()
+      self:skip_space_and_comments()
+      v = self:eval_literal(1)
+      self:skip_space_and_comments()
+
+      if self.char == ";" then
+         self:step()
+      end
+
+      t[k] = v
+   end
+
+   return t
+end
+
 --- Tries to evaluate a given string as a Lua literal. 
 -- Correct literals are "nil", "true", "false", decimal and hexadecimal numerical constants, short and long strings, and tables of other literals. 
 --
@@ -489,11 +522,26 @@ end
 -- @raise Errors similar to those of Lua compiler. 
 -- @return[type=nil|boolean|number|string|table] Result of evaluation. 
 function literal.eval(str, grammar, filename)
+   return literal.Cursor(str, grammar, filename):eval()
+end
+
+--- Protected version of @{eval}
+-- Acts as @{eval}, but instead of raising errors returns false and error message. 
+--
+-- @string str the string. 
+-- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
+-- @string[opt] filename the filename to be used in error messages. 
+-- @return[type=boolean] True if there were no errors, false otherwise. 
+-- @return[type=nil|boolean|number|string|table] Result of evaluation or error message. 
+function literal.peval(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
-   cur:skip_space_and_comments()
-   local res = cur:eval()
-   cur:finish()
-   return res
+   local ok, result = pcall(cur.eval, cur)
+
+   if not ok then
+      result = cur.errmsg
+   end
+
+   return ok, result
 end
 
 --- Tries to evaluate a given string as a config file. 
@@ -507,29 +555,26 @@ end
 -- @raise Errors similar to those of Lua compiler. 
 -- @return[type=table] Result of evaluation. 
 function literal.eval_config(str, grammar, filename)
+   return literal.Cursor(str, grammar, filename):eval_config()
+end
+
+--- Protected version of @{eval_config}
+-- Acts as @{eval_config}, but instead of raising errors returns false and error message. 
+--
+-- @string str the string. 
+-- @string[opt] grammar the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module. 
+-- @string[opt] filename the filename to be used in error messages. 
+-- @return[type=boolean] True if there were no errors, false otherwise. 
+-- @return[type=string|table] Result of evaluation or error message. 
+function literal.peval_config(str, grammar, filename)
    local cur = literal.Cursor(str, grammar, filename)
-   local t = {}
-   local k, v
+   local ok, result = pcall(cur.eval_config, cur)
 
-   while cur.i < cur.len do
-      cur:skip_space_and_comments()
-      k = cur:assert(cur:match "([_%a][_%a%d]*)", "unexpected symbol")
-      cur:step(k:len())
-      cur:skip_space_and_comments()
-      cur:assert(cur.char == "=", "'=' expected")
-      cur:step()
-      cur:skip_space_and_comments()
-      v = cur:eval(1)
-      cur:skip_space_and_comments()
-
-      if cur.char == ";" then
-         cur:step()
-      end
-
-      t[k] = v
+   if not ok then
+      result = cur.errmsg
    end
 
-   return t
+   return ok, result
 end
 
 return literal

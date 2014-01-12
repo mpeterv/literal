@@ -36,4 +36,9 @@ describe("numbers", function()
       assert.errors(function() literal.eval('0x1p-1', "5.1") end,
          [=[[string "0x1p-1"]:1: <eof> expected near 'p-1']=])
    end)
+
+   it("doesn't evaluate numbers with inf exp as NaN", function()
+      assert.equal(0, literal.eval(('1'):rep(500) .. 'e-100000'))
+      assert.equal(0, literal.eval('0x' .. ('1'):rep(500) .. 'p-100000', "5.2"))
+   end)
 end)

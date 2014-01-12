@@ -346,7 +346,13 @@ function literal.Cursor:eval_number()
       self:step(number_str:len())
    end
 
-   return res*mul
+   local number = res*mul
+
+   if number ~= number then
+      return 0
+   else
+      return number
+   end
 end
 
 local keywords = {

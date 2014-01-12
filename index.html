@@ -61,8 +61,16 @@
 	<td class="summary">Tries to evaluate a given string as a Lua literal.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#peval">peval&nbsp;(str [, grammar [, filename]])</a></td>
+	<td class="summary">Protected version of <a href="index.html#eval">eval</a>.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#eval_config">eval_config&nbsp;(str [, grammar [, filename]])</a></td>
 	<td class="summary">Tries to evaluate a given string as a config file.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#peval_config">peval_config&nbsp;(str [, grammar [, filename]])</a></td>
+	<td class="summary">Protected version of <a href="index.html#eval_config">eval_config</a>.</td>
 	</tr>
 </table>
 <h2><a href="#Fields">Fields</a></h2>
@@ -125,6 +133,42 @@
 
 </dd>
     <dt>
+    <a name = "peval"></a>
+    <strong>peval&nbsp;(str [, grammar [, filename]])</strong>
+    </dt>
+    <dd>
+    Protected version of <a href="index.html#eval">eval</a>.
+ Acts as <a href="index.html#eval">eval</a>, but instead of raising errors returns false and error message.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">str</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
+         the string.</li>
+        <li><span class="parameter">grammar</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
+         the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module.</li>
+        <li><span class="parameter">filename</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
+         the filename to be used in error messages.</li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+          <span class="types"><span class="type">boolean</span></span>
+        True if there were no errors, false otherwise.</li>
+        <li>
+          <span class="types"><span class="type">nil</span>, <span class="type">boolean</span>, <span class="type">number</span>, <a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a> or <a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.5">table</a></span>
+        Result of evaluation or error message.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "eval_config"></a>
     <strong>eval_config&nbsp;(str [, grammar [, filename]])</strong>
     </dt>
@@ -157,6 +201,42 @@
 
     <h3>Raises:</h3>
     Errors similar to those of Lua compiler.
+
+
+
+</dd>
+    <dt>
+    <a name = "peval_config"></a>
+    <strong>peval_config&nbsp;(str [, grammar [, filename]])</strong>
+    </dt>
+    <dd>
+    Protected version of <a href="index.html#eval_config">eval_config</a>.
+ Acts as <a href="index.html#eval_config">eval_config</a>, but instead of raising errors returns false and error message.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">str</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
+         the string.</li>
+        <li><span class="parameter">grammar</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
+         the grammar to be used. Must be either "5.1" or "5.2". Default grammar is the grammar of Lua version used to run the module.</li>
+        <li><span class="parameter">filename</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
+         the filename to be used in error messages.</li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+          <span class="types"><span class="type">boolean</span></span>
+        True if there were no errors, false otherwise.</li>
+        <li>
+          <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a> or <a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.5">table</a></span>
+        Result of evaluation or error message.</li>
+    </ol>
+
 
 
 

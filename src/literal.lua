@@ -61,12 +61,11 @@ function literal.Cursor:errormsg(msg, chunk)
       end
    end
 
-   self.errmsg = ("%s:%d: %s near %s"):format(self.repr, line, msg, chunk)
-   return self.errmsg
+   return ("%s:%d: %s near %s"):format(self.repr, line, msg, chunk)
 end
 
 function literal.Cursor:error(msg, chunk)
-   error(self:errormsg(msg, chunk))
+   error(self:errormsg(msg, chunk), 0)
 end
 
 function literal.Cursor:assert(assertion, msg, chunk)
@@ -161,25 +160,14 @@ function literal.Cursor:finish()
 end
 
 function literal.Cursor:eval_long_string()
-   local errmsg = self:errormsg("unfinished long string")
-   local second_opening_bracket = self:assert(self:match "%[=*()%[", "long string expected")
+   local brackets, newline, inner_string = self:match "%[(=*)%[(\r?\n?)(.-)%]%1%]"
 
-   local level = second_opening_bracket-self.i-1
-   self:jump(second_opening_bracket+1)
-
-   if self:match "[\r\n]" then
-      self:skip_newline()
+   if not brackets then
+      self:error "unfinished long string"
    end
 
-   local patt = "(.-)]" .. ("="):rep(level) .. "]()"
-   local str, next_i = self:match(patt)
-
-   if not str then
-      error(errmsg)
-   end
-
-   self:jump(next_i)
-   return str
+   self:step(#brackets*2 + #newline + #inner_string + 4)
+   return inner_string
 end
 
 local escapes = {
@@ -205,7 +193,7 @@ function literal.Cursor:eval_short_string()
 
    while self.char ~= quote do
       if not self:match "[^\r\n]" then
-         error(errmsg)
+         error(errmsg, 0)
       end
 
       if self.char == "\\" then
@@ -215,7 +203,7 @@ function literal.Cursor:eval_short_string()
          self:step()
 
          if self.char == "" then
-            error(errmsg)
+            error(errmsg, 0)
          end
 
          if escapes[self.char] then
@@ -228,17 +216,8 @@ function literal.Cursor:eval_short_string()
             self:skip_newline()
          elseif self:match "%d" then
             -- Decimal escape
-            local start_i = self.i
-            self:step()
-
-            for j=2, 3 do
-               if self:match "%d" then
-                  self:step()
-               end
-            end
-
-            -- i now points to first char not in escape
-            local code_str = self.str:sub(start_i, self.i-1)
+            local code_str = self:match "(%d%d?%d?)"
+            self:step(#code_str)
             local code = tonumber(code_str)
             self:assert(code and code < 256, "decimal escape too large", "'\\" .. code_str .. "'")
             table.insert(buf, string.char(code))
@@ -537,13 +516,7 @@ end
 function literal.peval(str, grammar, filename)
    assert(type(str) == "string", ("bad argument #1 to 'peval' (string expected, got %s)"):format(type(str)))
    local cur = literal.Cursor(str, grammar, filename)
-   local ok, result = pcall(cur.eval, cur)
-
-   if not ok then
-      result = cur.errmsg
-   end
-
-   return ok, result
+   return pcall(cur.eval, cur)
 end
 
 --- Tries to evaluate a given string as a config file. 
@@ -572,13 +545,7 @@ end
 function literal.peval_config(str, grammar, filename)
    assert(type(str) == "string", ("bad argument #1 to 'peval_config' (string expected, got %s)"):format(type(str)))
    local cur = literal.Cursor(str, grammar, filename)
-   local ok, result = pcall(cur.eval_config, cur)
-
-   if not ok then
-      result = cur.errmsg
-   end
-
-   return ok, result
+   return pcall(cur.eval_config, cur)
 end
 
 return literal

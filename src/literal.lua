@@ -36,13 +36,6 @@ function literal.Cursor:__init(str, grammar, filename)
 
       self.repr = ('[string "%s"]'):format(self.repr)
    end
-
-   -- Is current char the first half of two-chars newline?
-   if self:match "\r\n" or self:match "\n\r" then
-      self.bound = true
-   else
-      self.bound = false
-   end
 end
 
 function literal.Cursor:errormsg(msg, chunk)
@@ -76,60 +69,24 @@ function literal.Cursor:invalid_escape()
    self:error("invalid escape sequence", "'\\" .. self:match "(%C?)" .. "'")
 end
 
--- Can only jump forward
-function literal.Cursor:jump(i)
-   assert(i <= self.len)
-   local cur_newline, new_i, old_i
+function literal.Cursor:step(di)
+   local new_i = self.i + (di or 1)
 
-   while self.i < i do
-      new_i = self:find "[\r\n]"
-
-      if not new_i or new_i > i then
-         new_i = i
-      end
-
-      if self:match "[\r\n]" then
-         if not self.bound then
-            self.line = self.line+1
-         end
-      end
-
-      old_i, self.i = self.i, new_i
-
-      if self:match "\r\n" or self:match "\n\r" then
-         if self.i-old_i == 1 and self.bound then
-            self.bound = false
-         else
-            self.bound = true
-         end
-      else
-         self.bound = false
-      end
+   for _ in self.str:sub(self.i, new_i-1):gmatch "\n" do
+      self.line = self.line + 1
    end
 
-   self.char = self.str:sub(i, i)
-
+   self.i = new_i
+   self.char = self.str:sub(new_i, new_i)
    return self
-end
-
-function literal.Cursor:step(di)
-   return self:jump(self.i+(di or 1))
-end
-
-function literal.Cursor:find(pattern, plain)
-   return self.str:find(pattern, self.i+1, plain)
 end
 
 function literal.Cursor:match(pattern)
    return self.str:match("^" .. pattern, self.i)
 end
 
-function literal.Cursor:skip_newline()
-   self:step(self.bound and 2)
-end
-
 function literal.Cursor:skip_space()
-   return self:jump(self:match "%s*()")
+   return self:step(#self:match "(%s*)")
 end
 
 function literal.Cursor:skip_space_and_comments()
@@ -145,7 +102,7 @@ function literal.Cursor:skip_space_and_comments()
             self:eval_long_string()
          else
             -- Short comment
-            self:jump(self:match "[^\r\n]*()")
+            self:step(#self:match "([^\r\n]*)")
          end
       else
          return self
@@ -185,21 +142,24 @@ local escapes = {
 
 function literal.Cursor:eval_short_string()
    self:assert(self:match "['\"]", "short string expected")
-   local quote = self.char
+   local specials = "\r\n\\" .. self.char
+   local patt = ("([^%s]*)[%s]"):format(specials, specials)
    local errmsg = self:errormsg("unfinished string")
    local buf = {}
    self:step()
-   local chunk_start = self.i
 
-   while self.char ~= quote do
-      if not self:match "[^\r\n]" then
+   while true do
+      local raw_chunk = self:match(patt)
+
+      if not raw_chunk or self:match "[\r\n]" then
          error(errmsg, 0)
       end
 
+      table.insert(buf, raw_chunk)
+      self:step(#raw_chunk)
+
       if self.char == "\\" then
          -- Escape sequence
-         -- Cut chunk
-         table.insert(buf, self.str:sub(chunk_start, self.i-1))
          self:step()
 
          if self.char == "" then
@@ -210,10 +170,10 @@ function literal.Cursor:eval_short_string()
             -- Regular escape
             table.insert(buf, escapes[self.char])
             self:step()
-         elseif self:match "[\r\n]" then
+         elseif self:match "\r?\n" then
             -- Must replace with \n
             table.insert(buf, "\n")
-            self:skip_newline()
+            self:step(#self:match "(\r?\n)")
          elseif self:match "%d" then
             -- Decimal escape
             local code_str = self:match "(%d%d?%d?)"
@@ -242,16 +202,12 @@ function literal.Cursor:eval_short_string()
          else
             self:invalid_escape()
          end
-
-         chunk_start = self.i
       else
-         -- Regular char
-         self:step()
+         -- Ending quote
+         break
       end
    end
 
-   -- Add last chunk
-   table.insert(buf, self.str:sub(chunk_start, self.i-1))
    self:step()
    return table.concat(buf)
 end

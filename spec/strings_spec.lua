@@ -41,12 +41,10 @@ describe("short strings", function()
 
    it("substitutes newlines after backslash", function()
       assert.equal('foo\nbar', literal.eval([['foo\]] .. '\n' .. [[bar']]))
-      assert.equal('foo\nbar', literal.eval([['foo\]] .. '\r' .. [[bar']]))
       assert.equal('foo\nbar', literal.eval([['foo\]] .. '\r\n' .. [[bar']]))
-      assert.equal('foo\nbar', literal.eval([['foo\]] .. '\n\r' .. [[bar']]))
       assert.errors(function() literal.eval([['foo\]] .. '\n\n' .. [[bar']]) end,
          [=[[string "'foo\..."]:1: unfinished string near ''foo\']=])
-      assert.errors(function() literal.eval([['foo\]] .. '\r\r' .. [[bar']]) end,
+      assert.errors(function() literal.eval([['foo\]] .. '\n\r' .. [[bar']]) end,
          [=[[string "'foo\..."]:1: unfinished string near ''foo\']=])
    end)
 
